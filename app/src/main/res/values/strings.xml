@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">BinasJC_app</string>
+
+    <!-- Columns Point History Names -->
+    <string name="col1_ph">Pontos</string>
+    <string name="col2_ph">Data</string>
+    <string name="col3_ph">Estado</string>
+
+    <!-- Columns Traject History Names -->
+    <string name="col1_th">Ponto de Partida</string>
+    <string name="col2_th">Destino</string>
+    <string name="col3_th">Data</string>
+
+    <!-- Columns Reservation History Names -->
+    <string name="col1_rh">ID_Bicicleta</string>
+    <string name="col2_rh">Estação</string>
+    <string name="col3_rh">Data</string>
+
+    <!-- Rows Names -->
+    <string name="row1">Emanuel</string>
+    <string name="row2">14/12/2024</string>
+    <string name="row3">Recebido</string>
+</resources>

@@ -38,5 +38,97 @@ public class activity_station extends AppCompatActivity {
 
             }
         });
+
+        ConstraintLayout btnStation01 = findViewById(R.id.btnStation01);
+        btnStation01.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                startActivity(intent);
+                finish();
+                Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        ConstraintLayout btnStation02 = findViewById(R.id.btnStation02);
+        btnStation02.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                startActivity(intent);
+                finish();
+                Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        ConstraintLayout btnStation03 = findViewById(R.id.btnStation03);
+        btnStation03.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                startActivity(intent);
+                finish();
+                Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        ConstraintLayout btnStation04 = findViewById(R.id.btnStation04);
+        btnStation04.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                startActivity(intent);
+                finish();
+                Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        ConstraintLayout btnStation05 = findViewById(R.id.btnStation05);
+        btnStation05.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                startActivity(intent);
+                finish();
+                Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        ConstraintLayout btnStation06 = findViewById(R.id.btnStation06);
+        btnStation06.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                startActivity(intent);
+                finish();
+                Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+        ConstraintLayout btnStation07 = findViewById(R.id.btnStation07);
+        btnStation07.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(activity_station.this, activity_bike_list.class);
+                startActivity(intent);
+                finish();
+                Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
     }
 }

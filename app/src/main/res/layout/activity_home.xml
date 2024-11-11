@@ -108,7 +108,6 @@
                     android:inputType="text"
                     android:padding="16dp"
                     android:textColor="@color/white"
-
                     android:textColorHint="@color/white" />
             </LinearLayout>
 
@@ -268,5 +267,40 @@
 
         </LinearLayout>
     </ScrollView>
+    <LinearLayout
+        android:id="@+id/mapContainer"
+        android:layout_width="match_parent"
+        android:layout_height="800dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scrollView2">
+
+        <SearchView
+            android:id="@id/mapSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:queryHint="buscar por Estação"
+            android:iconifiedByDefault="false"
+            android:background="@drawable/edittext_background"
+            android:drawableStart="@drawable/search"
+            android:ems="10"
+            android:textColorHint="@color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <fragment
+            android:id="@+id/id_map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="750dp"
+            android:layout_margin="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

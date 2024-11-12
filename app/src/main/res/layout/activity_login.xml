@@ -75,6 +75,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtEmailLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
@@ -94,6 +95,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtPassLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
@@ -140,6 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:alpha="0.7"
+                android:padding="16dp"
                 android:text="Criar Conta"
                 android:clickable="true"
                 android:focusable="true" />

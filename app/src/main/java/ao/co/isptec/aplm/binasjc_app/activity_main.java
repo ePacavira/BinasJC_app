@@ -232,6 +232,9 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
                         public void onSuccess(Location location) {
                             if (location != null) {
                                 currentLocation = location;
+                                LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                                gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Actual"));
+                                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
                                 onMapReady(gMap);  // Atualiza o mapa com a localização do usuário
                             }
                         }
@@ -253,6 +256,8 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
         } else {
             Toast.makeText(this, "Localização não disponível", Toast.LENGTH_SHORT).show();
         }
+
+
     }
 
     @Override

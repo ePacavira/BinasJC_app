@@ -223,16 +223,22 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
             }
         });
 
-        ConstraintLayout btnCardChat = findViewById(R.id.cardChat);
+        CardView btnCardChat = findViewById(R.id.cardChat);
         btnCardChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(activity_main.this, activity_chat.class);
                 startActivity(intent);
-                finish();
-                
+
+                // Fecha o diálogo somente se estiver exibido
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+                Toast.makeText(activity_main.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+
             }
         });
+
 
 
     }

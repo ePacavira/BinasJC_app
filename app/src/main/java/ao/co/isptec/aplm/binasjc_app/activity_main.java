@@ -223,6 +223,18 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
             }
         });
 
+        ConstraintLayout btnCardChat = findViewById(R.id.cardChat);
+        btnCardChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(activity_main.this, activity_chat.class);
+                startActivity(intent);
+                finish();
+                
+            }
+        });
+
+
     }
     private void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {

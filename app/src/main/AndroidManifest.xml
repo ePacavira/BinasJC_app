@@ -58,7 +58,7 @@
             android:exported="false" />
         <activity
             android:name=".activity_main"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activity_profile"
             android:exported="false" />

@@ -31,6 +31,6 @@
         android:textSize="10sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textMessage"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="@id/textMessage"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

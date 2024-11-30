@@ -44,7 +44,7 @@ public class activity_station extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                Intent intent = new Intent(activity_station.this, activity_bike_list.class);
                 startActivity(intent);
                 finish();
                 Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
@@ -57,7 +57,7 @@ public class activity_station extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                Intent intent = new Intent(activity_station.this, activity_bike_list.class);
                 startActivity(intent);
                 finish();
                 Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
@@ -70,7 +70,7 @@ public class activity_station extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                Intent intent = new Intent(activity_station.this, activity_bike_list.class);
                 startActivity(intent);
                 finish();
                 Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
@@ -83,7 +83,7 @@ public class activity_station extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                Intent intent = new Intent(activity_station.this, activity_bike_list.class);
                 startActivity(intent);
                 finish();
                 Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
@@ -96,7 +96,7 @@ public class activity_station extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                Intent intent = new Intent(activity_station.this, activity_bike_list.class);
                 startActivity(intent);
                 finish();
                 Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
@@ -109,7 +109,7 @@ public class activity_station extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_station.this, activity_profile.class);
+                Intent intent = new Intent(activity_station.this, activity_bike_list.class);
                 startActivity(intent);
                 finish();
                 Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();

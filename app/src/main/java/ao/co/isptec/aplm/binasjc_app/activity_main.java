@@ -227,10 +227,9 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
         btnCardChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(activity_main.this, activity_chat.class);
+                Intent intent = new Intent(activity_main.this, activity_list_chat.class);
                 startActivity(intent);
 
-                // Fecha o diálogo somente se estiver exibido
                 if (dialog != null && dialog.isShowing()) {
                     dialog.dismiss();
                 }

@@ -9,6 +9,8 @@ import android.widget.ListView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,15 @@ public class activity_list_chat extends AppCompatActivity {
                 intent.putExtra("contact_name", clickedContact);
                 startActivity(intent);
                 }
+        });
+
+        ConstraintLayout btnBack= findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(activity_list_chat.this, activity_main.class);
+                startActivity(intent);
+            }
         });
     }
 

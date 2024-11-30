@@ -52,7 +52,7 @@ public class activity_login extends AppCompatActivity {
             }
         });
     }
-
+/*
     private void login() {
         String username = edtUsername.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
@@ -98,4 +98,6 @@ public class activity_login extends AppCompatActivity {
             }
         });
     }
+    
+ */
 }

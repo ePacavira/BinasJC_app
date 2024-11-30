@@ -44,6 +44,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation(libs.play.services.location)
+    implementation("com.google.android.gms:play-services-maps:18.0.2")  // versão corrigida
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

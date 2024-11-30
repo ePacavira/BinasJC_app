@@ -12,9 +12,8 @@
         android:background="@color/dark_blue"
         app:layout_constraintTop_toTopOf="parent">
 
-
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/contacts"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp"
@@ -29,11 +28,12 @@
 
     <!-- Lista de contatos -->
     <ListView
-        android:id="@+id/lstvwBike07"
+        android:id="@+id/ContactList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/img01"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

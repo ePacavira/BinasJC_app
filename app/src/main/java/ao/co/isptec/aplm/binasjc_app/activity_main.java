@@ -223,6 +223,23 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
             }
         });
 
+        CardView btnCardChat = findViewById(R.id.cardChat);
+        btnCardChat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(activity_main.this, activity_list_chat.class);
+                startActivity(intent);
+
+                if (dialog != null && dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+                Toast.makeText(activity_main.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+
+
     }
     private void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -232,6 +249,9 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
                         public void onSuccess(Location location) {
                             if (location != null) {
                                 currentLocation = location;
+                                LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                                gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Actual"));
+                                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
                                 onMapReady(gMap);  // Atualiza o mapa com a localização do usuário
                             }
                         }
@@ -253,6 +273,8 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
         } else {
             Toast.makeText(this, "Localização não disponível", Toast.LENGTH_SHORT).show();
         }
+
+
     }
 
     @Override

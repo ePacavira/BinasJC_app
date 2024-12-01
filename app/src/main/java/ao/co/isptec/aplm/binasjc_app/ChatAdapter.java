@@ -1,5 +1,6 @@
 package ao.co.isptec.aplm.binasjc_app;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,24 +24,31 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemViewType(int position) {
-        if (chatMessages.get(position).isSent()) {
-            return VIEW_TYPE_SENT;
-        } else {
-            return VIEW_TYPE_RECEIVED;
-        }
+       if(chatMessages == null || chatMessages.isEmpty()){
+           Log.e("ChatAdapter", "Chat messages list is null or empty");
+           return -1;
+       }
+        boolean isSent = chatMessages.get(position).isSent();
+        Log.d("ChatAdapter", "Position: " + position + ", isSent: " + isSent);
+        return isSent ? VIEW_TYPE_SENT : VIEW_TYPE_RECEIVED;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_SENT) {
+            Log.d("ChatAdapter", "Creating sent message view holder");
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_container_sent_message, parent, false);
             return new SentMessageViewHolder(view);
-        } else {
+        } else if(viewType == VIEW_TYPE_RECEIVED){
+            Log.d("ChatAdapter", "Creating received message view holder");
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.item_container_received_message, parent, false);
             return new ReceivedMessageViewHolder(view);
+        }else{
+            Log.e("ChatAdapter", "Invalid view type: " + viewType);
+            throw new IllegalArgumentException("Invalid view type");
         }
     }
 
@@ -56,7 +64,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return chatMessages.size();
+        Log.d("ChatAdapter", "Item count: " + (chatMessages != null ? chatMessages.size() : 0));
+        return chatMessages != null ? chatMessages.size() : 0;
     }
 
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {

@@ -2,62 +2,95 @@ package ao.co.isptec.aplm.binasjc_app;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class activity_list_chat extends AppCompatActivity {
-    private ListView contactListview;
+    private RecyclerView contactRecyclerView;
+    private activity_contact_adapter adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_list);
 
-        contactListview = findViewById(R.id.ContactList);
+        // Inicializar RecyclerView
+        contactRecyclerView = findViewById(R.id.ContactList);
+        contactRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        //Simulando um conjunto de Contactos
+        // Simulando um conjunto de Contactos
         List<String> contacts = new ArrayList<>();
         contacts.add("Eunice Soleno");
         contacts.add("Eliane Watele");
         contacts.add("Emanuel Pacavira");
 
-        //Criando um adaptador para a listview
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, contacts);
-        contactListview.setAdapter(adapter);
+        // Criando um adaptador para a RecyclerView
+        adapter = new activity_contact_adapter(contacts, this);
+        contactRecyclerView.setAdapter(adapter);
 
-        // Definindo o Listener para os cliques
-        contactListview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Obtém o contato clicado
-                String clickedContact = (String) parent.getItemAtPosition(position);
-
-                // Cria uma Intent para abrir outra atividade (exemplo)
-                Intent intent = new Intent(activity_list_chat.this, activity_chat.class);
-                intent.putExtra("contact_name", clickedContact);
-                startActivity(intent);
-                }
+        // botão de voltar
+        ConstraintLayout btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> {
+            Intent intent = new Intent(activity_list_chat.this, activity_main.class);
+            startActivity(intent);
+            finish(); // Opcional: fecha a atividade atual
         });
+    }
+}
 
-        ConstraintLayout btnBack= findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(activity_list_chat.this, activity_main.class);
-                startActivity(intent);
-            }
+class activity_contact_adapter extends RecyclerView.Adapter<ContactViewHolder> {
+    private List<String> contactList;
+    private activity_list_chat context;
+
+    public activity_contact_adapter(List<String> contactList, activity_list_chat context) {
+        this.contactList = contactList;
+        this.context = context;
+    }
+
+    @NonNull
+    @Override
+    public ContactViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Usar layout personalizado em vez de layout padrão do Android
+        TextView textView = (TextView) LayoutInflater.from(parent.getContext())
+                .inflate(android.R.layout.simple_list_item_1, parent, false);
+        return new ContactViewHolder(textView);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ContactViewHolder holder, int position) {
+        String contactName = contactList.get(position);
+        holder.contactNameTextView.setText(contactName);
+
+        holder.itemView.setOnClickListener(v -> {
+            // Abre a atividade de chat ao clicar no item
+            Intent intent = new Intent(context, activity_chat.class);
+            intent.putExtra("contact_name", contactName);
+            context.startActivity(intent);
         });
     }
 
+    @Override
+    public int getItemCount() {
+        return contactList.size();
     }
+}
 
+class ContactViewHolder extends RecyclerView.ViewHolder {
+    TextView contactNameTextView;
+
+    public ContactViewHolder(@NonNull TextView itemView) {
+        super(itemView);
+        this.contactNameTextView = itemView;
+    }
+}

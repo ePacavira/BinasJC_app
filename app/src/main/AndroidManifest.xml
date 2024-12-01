@@ -3,9 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<<<<<<< HEAD
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+=======
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+>>>>>>> 0a3234d9a30b3fd94a97fa4e7e8fd636f8ce4dc4
 
     <application
         android:allowBackup="true"
@@ -19,6 +25,8 @@
         tools:targetApi="31">
         <activity
             android:name=".activity_bike_list"
+<<<<<<< HEAD
+=======
             android:exported="false" />
         <activity
             android:name=".activity_list_chat"
@@ -28,6 +36,7 @@
             android:exported="false" />
         <activity
             android:name=".Map"
+>>>>>>> 0a3234d9a30b3fd94a97fa4e7e8fd636f8ce4dc4
             android:exported="false" />
         <activity
             android:name=".activity_dialog_reservation_bike"

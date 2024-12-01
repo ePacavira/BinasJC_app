@@ -66,6 +66,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtNameSign"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
@@ -85,6 +86,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtEmailSign"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
@@ -104,6 +106,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtPassSign"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
@@ -123,6 +126,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtConfPassSign"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"

@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
                 .findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid user Id:" + id));
 
-        user.setId(id);
+        user.setId_usuario(id);
 
         userRepository.save(user);
 

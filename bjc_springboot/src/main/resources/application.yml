@@ -8,7 +8,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     url: jdbc:mysql://localhost:3306/binasjc_db
-    password: gost
+    password: yun1
   jpa:
     hibernate:
       ddl-auto: update

@@ -12,7 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class retrofit_client {
 
     private static final String TAG = "RetrofitClient";
-    private static final String BASE_URL = "http://192.168.0.1:8080/api/";
+    private static final String BASE_URL = "http://192.168.0.1:8081/api/";
     private static Retrofit retrofit = null;
     private static final int TIMEOUT = 60;
 
@@ -48,7 +48,11 @@ public class retrofit_client {
                             return response;
                         } catch (Exception e) {
                             Log.e(TAG, "Erro na requisição: " + e.getMessage());
-                            throw e;
+                            try {
+                                throw e;
+                            } catch (Exception ex) {
+                                throw new RuntimeException(ex);
+                            }
                         }
                     })
                     .build();

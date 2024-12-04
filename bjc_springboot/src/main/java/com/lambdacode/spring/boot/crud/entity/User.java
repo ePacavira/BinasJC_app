@@ -17,7 +17,6 @@ public class User {
     private Integer id_usuario;
     private String nome;
     private String email;
-    private String palavra_passe;
-    private Integer pontuacao;
-
+    private String palavra_passe; // Nome mais claro para senha
+    private Integer pontuacao; // Mantido para lógica futura de pontuação
 }

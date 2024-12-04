@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +22,9 @@ import retrofit2.Response;
 
 public class activity_login extends AppCompatActivity {
 
+    EditText txtEmail, txtPassword;
+    Button btnLogin;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,13 +36,65 @@ public class activity_login extends AppCompatActivity {
             return insets;
         });
 
-        // Botão de navegação para o login do Usuário
-        Button btnLog = findViewById(R.id.btn_Login);
-        btnLog.setOnClickListener(new View.OnClickListener() {
+        // Inicializa os elementos da UI
+        txtEmail = findViewById(R.id.txtEmailLogin);
+        txtPassword = findViewById(R.id.txtPassLogin);
+        btnLogin = findViewById(R.id.btn_Login);
+
+        // Configura o botão de login
+        btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(activity_login.this, activity_main.class); // Nome correto da Activity de destino
-                startActivity(intent);
+                String email = txtEmail.getText().toString().trim();
+                String password = txtPassword.getText().toString().trim();
+
+                // Validação dos campos
+                if (email.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(activity_login.this, "Por favor, preencha todos os campos.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    txtEmail.setError("Email inválido!");
+                    return;
+                }
+
+                // Cria o objeto User com os dados de login
+                User loginUser = new User();
+                loginUser.setEmail(email);
+                loginUser.setPalavra_passe(password);
+
+                // Cria a instância Retrofit
+                AuthService authService = RetrofitClient.getRetrofitInstance().create(AuthService.class);
+                Call<AuthResponse> call = authService.login(loginUser);
+
+                // Faz a requisição assíncrona
+                call.enqueue(new Callback<AuthResponse>() {
+                    @Override
+                    public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            AuthResponse authResponse = response.body();
+
+                            // Verifica se o login foi bem-sucedido
+                            if (!authResponse.isSuccess()) {
+                                Toast.makeText(activity_login.this, authResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                                // Navega para a próxima Activity (activity_main)
+                                Intent intent = new Intent(activity_login.this, activity_main.class);
+                                startActivity(intent);
+                                finish();  // Finaliza a activity de login
+                            } else {
+                                Toast.makeText(activity_login.this, authResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(activity_login.this, "Erro no servidor. Tente novamente.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<AuthResponse> call, Throwable t) {
+                        Toast.makeText(activity_login.this, "Erro: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 
@@ -52,52 +108,4 @@ public class activity_login extends AppCompatActivity {
             }
         });
     }
-/*
-    private void login() {
-        String username = edtUsername.getText().toString().trim();
-        String password = edtPassword.getText().toString().trim();
-
-        // Desabilitar o botão enquanto processa o login
-        btnLogin.setEnabled(false);
-
-        LoginRequest loginRequest = new LoginRequest(username, password);
-
-        RetrofitClient.getApiService().login(loginRequest).enqueue(new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                // Reabilitar o botão
-                btnLogin.setEnabled(true);
-
-                if (response.isSuccessful() && response.body() != null) {
-                    // Login bem sucedido
-                    try {
-                        Intent intent = new Intent(LoginActivity.this, HomeView.class);
-                        startActivity(intent);
-                        finish(); // Fecha a activity de login
-                    } catch (Exception e) {
-                        Toast.makeText(LoginActivity.this,
-                                "Erro ao abrir a tela principal: " + e.getMessage(),
-                                Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    // Login falhou
-                    Toast.makeText(LoginActivity.this,
-                            "Credenciais inválidas. Tente novamente.",
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-                // Reabilitar o botão
-                btnLogin.setEnabled(true);
-
-                Toast.makeText(LoginActivity.this,
-                        "Erro de conexão: " + t.getMessage(),
-                        Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-    
- */
 }

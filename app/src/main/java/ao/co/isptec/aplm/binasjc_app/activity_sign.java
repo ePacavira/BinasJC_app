@@ -9,7 +9,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -27,170 +26,113 @@ public class activity_sign extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_sign);
 
+        // Ajusta as margens para dispositivos com barras de sistema
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
+        // Vincula os elementos da interface
         txtnamesign = findViewById(R.id.txtNameSign);
         txtemailsign = findViewById(R.id.txtEmailSign);
         txtpasssign = findViewById(R.id.txtPassSign);
         txtconfpasssign = findViewById(R.id.txtConfPassSign);
-
         btnsign1 = findViewById(R.id.btn_Sign1);
 
-        btnsign1.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View view){
-                processFormFields();
+        // Configura o botão de registro
+        btnsign1.setOnClickListener(v -> {
+            if (!validateFields()) {
+                return; // Se a validação falhar, sai.
             }
-        });
 
-        // Botão de navegação para a nova Activity
-       /*Button btnSig = findViewById(R.id.btn_Sign1);
-        btnSig.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(activity_sign.this, activity_login.class); // Nome correto da Activity de destino
-                startActivity(intent);
-            }
-        });*/
+            // Cria o objeto User com os dados do formulário
+            User user = new User();
+            user.setNome(txtnamesign.getText().toString().trim());
+            user.setEmail(txtemailsign.getText().toString().trim());
+            user.setPalavra_passe(txtpasssign.getText().toString().trim());
+            user.setPontuacao(10);
 
-        // Botão de navegação para a nova Activity
-        TextView txtLog = findViewById(R.id.txtLogin);
-        txtLog.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(activity_sign.this, activity_login.class); // Nome correto da Activity de destino
-                startActivity(intent);
-            }
-        });
-    }
+            // Faz a requisição para a API
+            AuthService authService = RetrofitClient.getRetrofitInstance().create(AuthService.class);
+            Call<AuthResponse> call = authService.signUp(user);
 
-    public void processFormFields(){
+            call.enqueue(new Callback<AuthResponse>() {
+                @Override
+                public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        AuthResponse authResponse = response.body();
+                        Toast.makeText(activity_sign.this, authResponse.getMessage(), Toast.LENGTH_SHORT).show();
 
-        if(!validateName() || !validateemail() || !validatepass()){
-            return;
-        }
-
-        Toast.makeText(activity_sign.this,"Registro Feito com Sucesso!!", Toast.LENGTH_SHORT).show();
-
-    }
-
-    public boolean validateName(){
-
-        String txtnameSign = txtnamesign.getText().toString();
-
-        if(txtnameSign.isEmpty()){
-            txtnamesign.setError("O campo Nome Completo está vazio!!");
-            return false;
-        }else{
-            txtnamesign.setError(null);
-            return true;
-        }
-
-    }
-
-    public boolean validateemail(){
-
-        String txtemailSign = txtemailsign.getText().toString();
-
-        if(txtemailSign.isEmpty()){
-            txtemailsign.setError("O campo Email está vazio!!");
-            return false;
-        }else if(!support_string_helper.regexEmailValidationPattern(txtemailSign)){
-
-            txtemailsign.setError("Este email é invalido, introduza um email Valido!!");
-            return false;
-
-        }else{
-            txtemailsign.setError(null);
-            return true;
-        }
-
-    }
-
-    public boolean validatepass(){
-
-        String txtpassSign = txtpasssign.getText().toString();
-        String txtconfpassSign = txtconfpasssign.getText().toString();
-
-        if(txtpassSign.isEmpty() || txtconfpassSign.isEmpty()){
-            txtpasssign.setError("O campo Palavra-Passe está vazio!!");
-            txtconfpasssign.setError("O campo Confirmar Palavra-Passe está vazio!!");
-            return false;
-        }else if(!txtpassSign.toString().equals(txtconfpassSign.toString())){
-            txtconfpasssign.setError("As palavra-passe diferente, tente novamente!!");
-            return false;
-        }
-        else{
-            txtpasssign.setError(null);
-            txtconfpasssign.setError(null);
-            return true;
-        }
-    }
-
-    private void register() {
-        String email = txtemailsign.getText().toString().trim();
-        String username = txtnamesign.getText().toString().trim();
-        String password = txtpasssign.getText().toString().trim();
-        String confirmPassword = txtconfpasssign.getText().toString().trim();
-
-        // Desabilitar o botão enquanto processa
-        btnsign1.setEnabled(false);
-
-        request_register registerRequest = new request_register(username, password, email, confirmPassword);
-
-        retrofit_client.getApiService().register(registerRequest).enqueue(new Callback<model_users>() {
-            @Override
-            public void onResponse(Call<model_users> call, Response<model_users> response) {
-                btnsign1.setEnabled(true);
-
-                if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(activity_sign.this,
-                            "Registro realizado com sucesso!", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(activity_sign.this, activity_login.class);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    try {
-                        String errorBody = response.errorBody() != null ?
-                                response.errorBody().string() : "Erro desconhecido";
-
-                        Log.e("activity_sign", "Erro no registro: " +
-                                "\nCódigo: " + response.code() +
-                                "\nMensagem: " + errorBody);
-
-                        Toast.makeText(activity_sign.this,
-                                "Erro no registro: " + errorBody, Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        Log.e("activity_sign", "Erro ao ler resposta: " + e.getMessage());
-                        Toast.makeText(activity_sign.this,
-                                "Erro no registro. Tente novamente.", Toast.LENGTH_SHORT).show();
+                        if (authResponse.isSuccess()) {
+                            // Navega para a tela de login ou próxima tela
+                            Intent intent = new Intent(activity_sign.this, activity_login.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    } else {
+                        Toast.makeText(activity_sign.this, "Falha no registro: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<model_users> call, Throwable t) {
-                btnsign1.setEnabled(true);
-                Log.e("activity_sign", "Falha na requisição: " + t.getMessage(), t);
-
-                String errorMessage;
-                if (t instanceof java.net.ConnectException) {
-                    errorMessage = "Não foi possível conectar ao servidor. Verifique sua conexão.";
-                } else if (t instanceof java.net.SocketTimeoutException) {
-                    errorMessage = "Tempo de conexão esgotado. Tente novamente.";
-                } else {
-                    errorMessage = "Erro: " + t.getMessage();
+                @Override
+                public void onFailure(Call<AuthResponse> call, Throwable t) {
+                    Toast.makeText(activity_sign.this, "Erro na conexão: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("API_ERROR", t.getMessage());
                 }
-
-                Toast.makeText(activity_sign.this, errorMessage, Toast.LENGTH_LONG).show();
-            }
+            });
         });
+
+
+        // Navegação para a Activity de Login
+        TextView txtLog = findViewById(R.id.txtLogin);
+        txtLog.setOnClickListener(v -> {
+            Intent intent = new Intent(activity_sign.this, activity_login.class);
+            startActivity(intent);
+        });
+    }
+
+    // Valida os campos do formulário
+    private boolean validateFields() {
+        boolean valid = true;
+
+        if (txtnamesign.getText().toString().trim().isEmpty()) {
+            txtnamesign.setError("O campo Nome Completo está vazio!");
+            valid = false;
+        }
+
+        String email = txtemailsign.getText().toString().trim();
+        if (email.isEmpty()) {
+            txtemailsign.setError("O campo Email está vazio!");
+            valid = false;
+        } else if (!support_string_helper.regexEmailValidationPattern(email)) {
+            txtemailsign.setError("Este email é inválido!");
+            valid = false;
+        }
+
+        String password = txtpasssign.getText().toString();
+        String confirmPassword = txtconfpasssign.getText().toString();
+        if (password.isEmpty()) {
+            txtpasssign.setError("O campo Palavra-Passe está vazio!");
+            valid = false;
+        }
+        if (!password.equals(confirmPassword)) {
+            txtconfpasssign.setError("As palavras-passe são diferentes!");
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    // Método para registrar o usuário
+    private void register() {
+        String name = txtnamesign.getText().toString().trim();
+        String email = txtemailsign.getText().toString().trim();
+        String password = txtpasssign.getText().toString().trim();
+
+        // Desabilita o botão para evitar cliques repetidos
+        btnsign1.setEnabled(false);
     }
 }

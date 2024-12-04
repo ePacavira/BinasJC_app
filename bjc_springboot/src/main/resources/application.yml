@@ -2,15 +2,26 @@ server:
   port: 8081
   error:
     include-message: always
+    include-binding-errors: always
 
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
     url: jdbc:mysql://localhost:3306/binasjc_db
+    username: root
     password: gost
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-    open-in-view: true
+    properties:
+      hibernate.format_sql: true
+  sql:
+    init:
+      enabled: always  # Garante que os scripts de inicialização sejam sempre executados
+      platform: mysql  # Especifica a plataforma do banco de dados (MySQL)
+      
+logging:
+  level:
+    org.hibernate.SQL: DEBUG  # Para exibir queries SQL no console.
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # Para ver parâmetros em queries.

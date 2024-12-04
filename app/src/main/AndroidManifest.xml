@@ -35,7 +35,7 @@
             android:exported="false" />
         <activity
             android:name=".activity_dialog_return_bike"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activity_reservation_history"
             android:exported="false" />
@@ -68,7 +68,7 @@
             android:exported="false" />
         <activity
             android:name=".activity_profile"
-            android:exported="false" />
+            android:exported="true" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

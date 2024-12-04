@@ -75,6 +75,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtNameEdit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
@@ -94,6 +95,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtEmailEdit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
@@ -113,6 +115,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtPassEdit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
@@ -132,6 +135,7 @@
                 android:textStyle="bold" />
 
             <EditText
+                android:id="@+id/txtConfPassEdit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
@@ -143,6 +147,7 @@
                 android:layout_height="20dp" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/button"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="Atualizar"

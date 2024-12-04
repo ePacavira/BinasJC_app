@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -19,6 +20,7 @@ public class activity_profile extends AppCompatActivity {
 
     Dialog dialog, dialog_1;
     Button btnDialogLogout, btnDialogCancel, btnDialogCancel1;
+    TextView userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,16 @@ public class activity_profile extends AppCompatActivity {
 
         btnDialogLogout = dialog.findViewById(R.id.btnDialogEntregar);
         btnDialogCancel = dialog.findViewById(R.id.btnDialogCancel);
+
+        userName = findViewById(R.id.txtName);
+        userName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(activity_profile.this,activity_edit_sign.class);
+                startActivity(intent);
+            }
+        });
+
 
         btnDialogCancel1 = dialog_1.findViewById(R.id.btnDialogCancelBike);
 

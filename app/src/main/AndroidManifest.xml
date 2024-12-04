@@ -4,15 +4,9 @@
     tools:ignore="ExtraText">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-=======
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-
->>>>>> 0a3234d9a30b3fd94a97fa4e7e8fd636f8ce4dc4
 
     <application
         android:networkSecurityConfig="@xml/network_security_config"
@@ -27,10 +21,8 @@
         android:theme="@style/Theme.BinasJC_app"
         tools:targetApi="31">
         <activity
-            android:name=".activity_bike_list"
-        />
-        =======
-            android:exported="false" />
+            android:name=".activity_bike_list"/>
+
         <activity
             android:name=".activity_list_chat"
             android:exported="true" />
@@ -38,16 +30,14 @@
             android:name=".activity_chat"
             android:exported="false" />
         <activity
-            android:name=".Map"
-/>
->>>>> 0a3234d9a30b3fd94a97fa4e7e8fd636f8ce4dc4
-            android:exported="false" />
+            android:name=".Map"/>
+
         <activity
             android:name=".activity_dialog_reservation_bike"
             android:exported="false" />
         <activity
             android:name=".activity_dialog_return_bike"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activity_reservation_history"
             android:exported="false" />
@@ -80,7 +70,7 @@
             android:exported="false" />
         <activity
             android:name=".activity_profile"
-            android:exported="false" />
+            android:exported="true" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

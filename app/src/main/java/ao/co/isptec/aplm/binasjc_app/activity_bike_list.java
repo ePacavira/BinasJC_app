@@ -55,9 +55,11 @@ public class activity_bike_list extends AppCompatActivity {
         lstvwBike07.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                if(position == 0){
+                /*if(position == 0){
                     Toast.makeText(activity_bike_list.this, "First Bike Clicked", Toast.LENGTH_SHORT).show();
-                }
+                }*/
+                Intent intent = new Intent(activity_bike_list.this, activity_dialog_reservation_bike.class);
+                startActivity(intent);
             }
         });
 

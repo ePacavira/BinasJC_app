@@ -66,7 +66,7 @@
             android:name=".activity_login"
             android:exported="false" />
         <activity
-            android:name=".activity_main"
+            android:name=".activity_home"
             android:exported="false" />
         <activity
             android:name=".activity_profile"

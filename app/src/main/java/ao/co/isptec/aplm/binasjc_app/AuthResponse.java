@@ -3,24 +3,31 @@ package ao.co.isptec.aplm.binasjc_app;
 
 public class AuthResponse {
 
+    private boolean success;
     private String message;
-    private boolean success = true;
+    private String userName;
+    private int userId; // Campo para armazenar o ID do usuário
+    private int userPontuacao; // Número de pontos do usuário
 
     // Getters e Setters
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     public boolean isSuccess() {
         return success;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public String getMessage() {
+        return message;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public int getUserPontuacao() {
+        return userPontuacao;
     }
 
 }

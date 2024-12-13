@@ -7,7 +7,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -31,7 +30,7 @@ public class activity_station extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_station.this, activity_main.class);
+                Intent intent = new Intent(activity_station.this, activity_home.class);
                 startActivity(intent);
                 finish();
                 Toast.makeText(activity_station.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();

@@ -42,7 +42,7 @@ public class activity_list_chat extends AppCompatActivity {
         // botão de voltar
         ConstraintLayout btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> {
-            Intent intent = new Intent(activity_list_chat.this, activity_main.class);
+            Intent intent = new Intent(activity_list_chat.this, activity_home.class);
             startActivity(intent);
             finish(); // Opcional: fecha a atividade atual
         });

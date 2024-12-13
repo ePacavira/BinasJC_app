@@ -1,12 +1,19 @@
 package ao.co.isptec.aplm.binasjc_app;
 
 public class User {
+        private int id;
         private String nome;
         private String email;
         private String palavra_passe;
         private int pontuacao;
 
         // Getters e setters
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) { this.id = id; }
+
         public String getNome() {
             return nome;
         }

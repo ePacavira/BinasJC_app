@@ -40,10 +40,11 @@ public class UserController {
      * get user by id
      */
 
-    @GetMapping("/get")
-    public User getUser(@RequestParam Integer id) {
+    @GetMapping("/get/{id}")
+    public User getUser(@PathVariable Integer id) {
         return userService.getUser(id);
     }
+
 
     /**
      * update user

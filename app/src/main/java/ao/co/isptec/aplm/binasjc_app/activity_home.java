@@ -1,14 +1,14 @@
 package ao.co.isptec.aplm.binasjc_app;
 
+import static android.content.ContentValues.TAG;
+
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +29,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import android.util.Log;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -40,13 +41,17 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import java.util.HashMap;
-import java.util.List;
 
-public class activity_main extends AppCompatActivity implements OnMapReadyCallback {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+public class activity_home extends AppCompatActivity implements OnMapReadyCallback {
 
     Dialog dialog;
     Button btnDialogLogout, btnDialogCancel;
@@ -60,12 +65,45 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
     private HashMap<String,LatLng>predefinedLocations; //conjunto de Localizações que corresponderão as localizações das estações
     private  Marker lastMarker;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_home);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("USER_PREFS", MODE_PRIVATE);
+        int userId = sharedPreferences.getInt("USER_ID", -1);
+        int userPoints = sharedPreferences.getInt("USER_POINTS", 0); // Valor padrão: 0
+
+        // Obter instância de Retrofit
+        Retrofit retrofit = RetrofitClient.getRetrofitInstance();
+
+        // Criar a interface do serviço da API
+        ApiService apiService = retrofit.create(ApiService.class);
+
+        // Fazer a chamada à API
+        Call<User> call = apiService.getUserById(userId);
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    TextView textUserName = findViewById(R.id.textUserName);
+                    textUserName.setText("Olá, " + user.getNome());
+                    TextView textUserPoints = findViewById(R.id.textUserPoints);
+                    textUserPoints.setText(userPoints + " Pts");
+
+                } else {
+                    Toast.makeText(activity_home.this, "Erro ao carregar dados do usuário", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Toast.makeText(activity_home.this, "Erro na comunicação com o servidor", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "onFailure: ", t);
+            }
+        });
 
         mapSearchView = findViewById(R.id.mapSearch);
         int searchTextId = mapSearchView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
@@ -113,9 +151,9 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
 
                     gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 10));
-                    Toast.makeText(activity_main.this, "Estação encontrada: " + query, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity_home.this, "Estação encontrada: " + query, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(activity_main.this, "Estação não encontrada", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity_home.this, "Estação não encontrada", Toast.LENGTH_SHORT).show();
                 }
                 return false;
             }
@@ -134,7 +172,7 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
             return insets;
         });
 
-        dialog = new Dialog(activity_main.this);
+        dialog = new Dialog(activity_home.this);
         dialog.setContentView(R.layout.activity_dialog_share);
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.getWindow().setBackgroundDrawable(getDrawable(R.drawable.activity_dialog_share_bg));
@@ -170,10 +208,10 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
         btnDialogLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(activity_main.this, activity_login.class);
+                Intent intent = new Intent(activity_home.this, activity_login.class);
                 startActivity(intent);
                 finish();
-                Toast.makeText(activity_main.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity_home.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
             }
         });
@@ -200,10 +238,10 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_main.this, activity_station.class);
+                Intent intent = new Intent(activity_home.this, activity_station.class);
                 startActivity(intent);
                 finish();
-                Toast.makeText(activity_main.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity_home.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
 
             }
@@ -214,10 +252,10 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_main.this, activity_profile.class);
+                Intent intent = new Intent(activity_home.this, activity_profile.class);
                 startActivity(intent);
                 finish();
-                Toast.makeText(activity_main.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity_home.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
                 dialog.dismiss();
 
             }
@@ -227,13 +265,13 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
         btnCardChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(activity_main.this, activity_list_chat.class);
+                Intent intent = new Intent(activity_home.this, activity_list_chat.class);
                 startActivity(intent);
 
                 if (dialog != null && dialog.isShowing()) {
                     dialog.dismiss();
                 }
-                Toast.makeText(activity_main.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity_home.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();
 
             }
         });

@@ -87,9 +87,9 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView
-                android:id="@+id/txtName"
+                android:id="@+id/txtUserName"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="40dp"
                 android:layout_marginTop="8dp"
                 android:text="Eunicio Watele"
                 android:textAlignment="center"
@@ -98,7 +98,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/txtEmail"
+                android:id="@+id/txtUserEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="euniciowatele@binasjc.com"

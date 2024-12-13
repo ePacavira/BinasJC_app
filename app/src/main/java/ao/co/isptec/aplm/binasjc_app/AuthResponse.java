@@ -5,8 +5,9 @@ public class AuthResponse {
 
     private boolean success;
     private String message;
-    private String userName;
     private int userId; // Campo para armazenar o ID do usuário
+    private String userName;
+    private String userEmail;
     private int userPontuacao; // Número de pontos do usuário
 
     // Getters e Setters
@@ -24,6 +25,10 @@ public class AuthResponse {
 
     public String getUserName() {
         return userName;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
     }
 
     public int getUserPontuacao() {

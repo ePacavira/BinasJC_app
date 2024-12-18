@@ -1,8 +1,5 @@
 package ao.co.isptec.aplm.binasjc_app;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -26,13 +23,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import java.util.List;
 
-import ao.co.isptec.aplm.binasjc_app.R;
-
-public class Map extends AppCompatActivity implements OnMapReadyCallback {
+public class Map<S, S1> extends AppCompatActivity implements OnMapReadyCallback {
     private GoogleMap gMap;
     private final int FINE_PERMISSION_CODE = 1;
     Location currentLocation;

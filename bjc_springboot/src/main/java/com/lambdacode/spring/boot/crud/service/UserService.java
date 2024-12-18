@@ -4,6 +4,7 @@ import com.lambdacode.spring.boot.crud.dto.UserDTO;
 import com.lambdacode.spring.boot.crud.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
     

@@ -56,7 +56,7 @@ public class activity_sign extends AppCompatActivity {
             user.setPontuacao(10);
 
             // Faz a requisição para a API
-            AuthService authService = RetrofitClient.getRetrofitInstance().create(AuthService.class);
+            ApiService authService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
             Call<AuthResponse> call = authService.signUp(user);
 
             call.enqueue(new Callback<AuthResponse>() {

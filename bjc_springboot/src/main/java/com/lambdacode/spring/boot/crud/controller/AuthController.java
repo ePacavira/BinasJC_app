@@ -55,20 +55,27 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> login(@RequestBody User loginRequest) {
         Map<String, Object> response = new HashMap<>();
 
+        // Busca o usuário com base no email
         Optional<User> user = userService.getUsers()
                 .stream()
                 .filter(u -> u.getEmail().equals(loginRequest.getEmail()))
                 .findFirst();
 
+        // Verifica se o usuário existe e se a senha é válida
         if (user.isPresent() && passwordEncoder.matches(loginRequest.getPalavra_passe(), user.get().getPalavra_passe())) {
-            response.put("status", "success");
-            response.put("message", "Login bem-sucedido!");
+            // Adiciona os campos desejados na resposta
+            response.put("success", true);
+            response.put("message", "Login efetuado com sucesso");
+            response.put("userId", user.get().getId_usuario()); // ID do usuário autenticado
+            response.put("userNome", user.get().getNome());
+            response.put("userPontuacao",user.get().getPontuacao());
+
             return ResponseEntity.ok(response);
         }
 
-        response.put("status", "error");
+        // Caso as credenciais sejam inválidas
+        response.put("success", false);
         response.put("message", "Credenciais inválidas!");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
-
 }

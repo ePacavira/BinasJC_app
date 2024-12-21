@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class User {
+        private int id;
         private String nome;
         private String email;
         private String palavra_passe;
@@ -14,6 +15,12 @@ public class User {
             this.trajectories.add(trajectory);
         }*/
         // Getters e setters
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) { this.id = id; }
+
         public String getNome() {
             return nome;
         }

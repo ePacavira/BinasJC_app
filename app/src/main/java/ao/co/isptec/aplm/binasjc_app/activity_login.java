@@ -1,7 +1,11 @@
 package ao.co.isptec.aplm.binasjc_app;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -61,7 +65,7 @@ public class activity_login extends AppCompatActivity {
             loginUser.setPalavra_passe(password);
 
             // Cria a instância Retrofit
-            AuthService authService = RetrofitClient.getRetrofitInstance().create(AuthService.class);
+            ApiService authService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
             Call<AuthResponse> call = authService.login(loginUser);
 
             // Faz a requisição assíncrona
@@ -73,9 +77,27 @@ public class activity_login extends AppCompatActivity {
 
                         // Verifica se o login foi bem-sucedido
                         if (authResponse.isSuccess()) {
+                            // Define o ID do usuário autenticado
+                            int userId = authResponse.getUserId();
+                            String userName = authResponse.getUserName();
+                            int userPoints = authResponse.getUserPontuacao(); // Obtém os pontos do usuário
+
+                            // Log para verificação
+                            Log.d(TAG, "Login bem-sucedido. ID do usuário: " + userId);
+
+                            // Salva o ID no SharedPreferences
+                            SharedPreferences sharedPreferences = getSharedPreferences("USER_PREFS", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putInt("USER_ID", authResponse.getUserId());
+                            editor.putString("USER_NAME", authResponse.getUserName());
+                            editor.putInt("USER_POINTS", authResponse.getUserPontuacao()); // Salva os pontos
+                            editor.apply();
+
+                            // Exibe mensagem de sucesso
                             Toast.makeText(activity_login.this, authResponse.getMessage(), Toast.LENGTH_SHORT).show();
-                            // Navega para a próxima Activity (activity_main)
-                            Intent intent = new Intent(activity_login.this, activity_main.class);
+
+                            // Navega para a próxima Activity (activity_home)
+                            Intent intent = new Intent(activity_login.this, activity_home.class);
                             startActivity(intent);
                             finish();  // Finaliza a activity de login
                         } else {

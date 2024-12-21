@@ -111,11 +111,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:alpha="0.7"
-                android:text="Palavra-passe"
+                android:text="Palavra-passe Antiga"
                 android:textStyle="bold" />
 
             <EditText
-                android:id="@+id/txtPassEdit"
+                android:id="@+id/txtOldPassEdit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
@@ -131,11 +131,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:alpha="0.7"
-                android:text="Confirmar Palavra-passe"
+                android:text="Palavra-passe Nova"
                 android:textStyle="bold" />
 
             <EditText
-                android:id="@+id/txtConfPassEdit"
+                android:id="@+id/txtNewPassEdit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
@@ -147,7 +147,7 @@
                 android:layout_height="20dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/button"
+                android:id="@+id/btnEditUser"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:text="Atualizar"

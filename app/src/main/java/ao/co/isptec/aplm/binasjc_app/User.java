@@ -1,11 +1,18 @@
 package ao.co.isptec.aplm.binasjc_app;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
         private String nome;
         private String email;
         private String palavra_passe;
         private int pontuacao;
+        /*private List<Trajectory> trajectories = new ArrayList<>();
 
+        public void addTrajectory(Trajectory trajectory) {
+            this.trajectories.add(trajectory);
+        }*/
         // Getters e setters
         public String getNome() {
             return nome;
@@ -39,4 +46,11 @@ public class User {
             this.pontuacao = pontuacao;
         }
 
+    /*public List<Trajectory> getTrajectories() {
+        return trajectories;
+    }
+
+    public void setTrajectories(List<Trajectory> trajectories) {
+        this.trajectories = trajectories;
+    }*/
 }

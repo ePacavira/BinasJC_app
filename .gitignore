@@ -1,3 +1,8 @@
+.idea/deploymentTargetSelector.xml
+          .idea/misc.xml
+          app/src/main/AndroidManifest.xml
+          app/src/main/java/ao/co/isptec/aplm/binasjc_app/activity_dialog_return_bike.java
+          bjc_springboot/src/main/resources/application.yml
 *.iml
 .gradle
 /local.properties

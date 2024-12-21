@@ -1,15 +1,21 @@
 package ao.co.isptec.aplm.binasjc_app;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
+
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -30,21 +36,33 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 
 public class activity_main extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -54,12 +72,21 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
     TextView txtView;
     private GoogleMap gMap;
     private final int FINE_PERMISSION_CODE = 1;
+    private final static int REQUEST_CHECK_CODE = 1001;
     Location currentLocation;
     FusedLocationProviderClient fusedLocationProviderClient;
     private SearchView mapSearchView;
     private HashMap<String,LatLng>predefinedLocations; //conjunto de Localizações que corresponderão as localizações das estações
-    private  Marker lastMarker;
-
+    private  Marker currentMarket;
+    private ArrayList<Trajectory> allTrajectories = new ArrayList<>();
+    private LocationCallback locationCallback;
+    private LocationRequest locationRequest = new LocationRequest.Builder(
+            LocationRequest.PRIORITY_HIGH_ACCURACY,
+            30000
+    )
+            .setMinUpdateIntervalMillis(100)
+            .build();
+    private int pontuacao = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,62 +104,106 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
         searchIcon.setColorFilter(getResources().getColor(R.color.white), PorterDuff.Mode.SRC_IN); // Define a cor do ícone
 
         predefinedLocations = new HashMap<>();
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
         // Adiciona Estações predefinidas
-        predefinedLocations.put("EstacaoSoleno", new LatLng(-8.839, 13.234)); // Exemplo de uma estação fíticia
-        predefinedLocations.put("EstacaoEunice", new LatLng(-8.828, 13.230));
-        predefinedLocations.put("EstacaoNumbi", new LatLng(-8.825, 13.245));
+        predefinedLocations.put("EstacaoProxima1", new LatLng(-8.8370, 13.2885)); // < 150 metros
+        predefinedLocations.put("EstacaoProxima2", new LatLng(-8.8355, 13.2890)); // < 150 metros
+        predefinedLocations.put("EstacaoProxima3", new LatLng(-8.8365, 13.2880)); // < 150 metros
 
+        predefinedLocations.put("EstacaoDistante1", new LatLng(-8.8600, 13.3100)); // > 150 metros
+        predefinedLocations.put("EstacaoDistante2", new LatLng(-8.8000, 13.3300)); // > 150 metros
+
+
+        // Inicializa FusedLocationProviderClient
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity_main.this);
+        getLastLocation();
+
+        // Configura o mapa
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.id_map);
-
-        // Verificar permissões de localização
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
-        } else {
-            getLastLocation();
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
         }
-
         mapSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-
             @Override
             public boolean onQueryTextSubmit(String query) {
-                if(lastMarker != null){
-                    lastMarker.remove();
-                    lastMarker = null;
-                }
-
-                // Verifica se a pesquisa corresponde a um ponto predefinido
-                if (predefinedLocations.containsKey(query)) {
-                    LatLng location = predefinedLocations.get(query);
-
-                    // Adiciona um marcador no ponto correspondente
-                    lastMarker = gMap.addMarker(new MarkerOptions()
-                            .position(location)
-                            .title(query)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
-
-                    gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 10));
-                    Toast.makeText(activity_main.this, "Estação encontrada: " + query, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(activity_main.this, "Estação não encontrada", Toast.LENGTH_SHORT).show();
-                }
+                handleSearchQuery( query);
                 return false;
             }
-
             @Override
             public boolean onQueryTextChange(String newText) {
                 return false;
             }
         });
-        mapFragment.getMapAsync(this);
+        locationCallback = new LocationCallback() {
+            private Trajectory currentTrajectory;
+
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult != null) {
+                    Location location = locationResult.getLastLocation();
+                    if (location != null) {
+                        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+                        // Inicia a trajetória, se necessário
+                        if (currentTrajectory == null) {
+                            currentTrajectory = new Trajectory(currentLatLng);
+                            Log.d("Trajectory", "Trajetória iniciada em: " + currentLatLng);
+                        }
+
+                        // Adiciona o ponto atual à trajetória
+                        currentTrajectory.addPoint(currentLatLng);
+                        Log.d("Trajectory", "Ponto adicionado: " + currentLatLng);
+
+                        // Verifica se o usuário chegou a uma estação
+                        for (String stationName : predefinedLocations.keySet()) {
+                            LatLng stationLatLng = predefinedLocations.get(stationName);
+                            float[] results = new float[1];
+                            Location.distanceBetween(
+                                    location.getLatitude(), location.getLongitude(),
+                                    stationLatLng.latitude, stationLatLng.longitude,
+                                    results
+                            );
+
+                            // Verifica se está dentro do raio da estação
+                            if (results[0] <= 20) {
+                                currentTrajectory.setEndLocation(stationLatLng);
+                                Log.d("Trajectory", "Trajetória finalizada na estação: " + stationName);
+
+                                // Salva a trajetória e reinicia o rastreamento
+                                allTrajectories.add(currentTrajectory);
+                                currentTrajectory = null;
+                                Toast.makeText(activity_main.this, "Você chegou na estação: " + stationName, Toast.LENGTH_SHORT).show();
+                                break;
+                            }
+                        }
+
+                        int totalPoints = 0;
+                        List<LatLng> points = currentTrajectory.getIntermediatePoints();
+                        for (int i = 1; i < points.size(); i++) {
+                            float[] results = new float[1];
+                            LatLng currentPoint = points.get(i);
+                            LatLng previousPoint = points.get(i - 1);
+
+                            Location.distanceBetween(
+                                    previousPoint.latitude, previousPoint.longitude,
+                                    currentPoint.latitude, currentPoint.longitude,
+                                    results
+                            );
+
+                            if (results[0] >= 10) {
+                                totalPoints++;
+                                Log.d("MyPoint","Pontuação actual: " + totalPoints);
+                            }
+                        }
+                        pontuacao += totalPoints;
+                        Log.d("LocationUpdate", "Lat: " + location.getLatitude() + ", Lng: " + location.getLongitude());
+                    }
+                }
+                showAllPoint();
+            }
+        };
 
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        setupLocationUpdates();
 
         dialog = new Dialog(activity_main.this);
         dialog.setContentView(R.layout.activity_dialog_share);
@@ -237,10 +308,18 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
 
             }
         });
-
-
-
     }
+    private void showAllPoint(){
+        for(Trajectory trajectory : allTrajectories){
+            if(trajectory != null){
+                Log.e("TrajectoryPoints", trajectory.getEndLocation().toString());
+            }else{
+                Log.e("TrajectoryPoints", "Location is null");
+
+            }
+        }
+    }
+
     private void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationProviderClient.getLastLocation()
@@ -250,14 +329,14 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
                             if (location != null) {
                                 currentLocation = location;
                                 LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                                gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Actual"));
+                                currentMarket = gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Actual"));
                                 gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
-                                onMapReady(gMap);  // Atualiza o mapa com a localização do usuário
+                            } else {
+                                Toast.makeText(activity_main.this, "Localização não disponível", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
         } else {
-            // Solicita permissão se ela ainda não foi concedida
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
         }
     }
@@ -267,14 +346,104 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
         gMap = googleMap;
         if (currentLocation != null) {
             LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-            // Adiciona o marcador da localização atual
             gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Actual"));
             gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
+            getLastLocation();
         } else {
-            Toast.makeText(this, "Localização não disponível", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity_main.this, "Localização não disponível", Toast.LENGTH_SHORT).show();
         }
 
+        // Aguarda que o layout do mapa esteja pronto
+        gMap.setOnMapLoadedCallback(() -> {
+            showAllStations();
+            Log.e("Verificar estações proximas", "FUNÇÃO showAllStations CHAMADA!!!!!!!!");
+        });
 
+    }
+
+    private void showAllStations() {
+        if (gMap == null) {
+            return;
+        }
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        boolean hasMarkers = false;
+        float[] results = new float[1];
+
+        // Certifique-se de que currentLocation não é nulo
+        if (currentLocation != null) {
+            for (String stationName : predefinedLocations.keySet()) {
+                LatLng location = predefinedLocations.get(stationName);
+
+                // Obter a distância entre a localização atual e as estações
+                Location.distanceBetween(
+                        currentLocation.getLatitude(), currentLocation.getLongitude(),
+                        location.latitude, location.longitude, results
+                );
+
+                if (results[0] < 150) { // Comparando a distância real
+                    gMap.addMarker(new MarkerOptions()
+                            .position(location)
+                            .title(stationName)
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET)));
+                    builder.include(location);
+                    hasMarkers = true;
+                }
+            }
+        } else {
+            Log.e("ShowStations", "Localização atual é nula, não é possível calcular distâncias.");
+        }
+
+        if (hasMarkers) {
+            try {
+                LatLngBounds bounds = builder.build();
+                gMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
+            } catch (IllegalStateException e) {
+                Log.e("ShowStations", "Erro ao ajustar limites do mapa", e);
+            }
+        } else {
+            Log.e("ShowStations", "Nenhum marcador adicionado para ajustar limites.");
+        }
+
+        // Adicionando o listener para clique nos marcadores
+        gMap.setOnMarkerClickListener(marker -> {
+            if(!currentMarket.getTitle().equals(marker.getTitle())){
+                String stationName = marker.getTitle();
+                Intent intent = new Intent(activity_main.this, activity_bike_list.class);
+                intent.putExtra("STATION_NAME", stationName);
+                startActivity(intent);
+            }
+            return false;
+        });
+    }
+
+
+    private void handleSearchQuery(String query) {
+        if (gMap == null || currentLocation == null) {
+            Log.e("HandleSearchQuery", "Mapa ou localização atual não disponível");
+            return;
+        }
+
+        if (predefinedLocations.containsKey(query)) {
+            LatLng destination = predefinedLocations.get(query);
+
+            // Criar uma Polyline entre a localização atual e o destino
+            LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+
+            gMap.addPolyline(new PolylineOptions()
+                    .add(currentLatLng, destination)
+                    .width(10)
+                    .color(Color.BLUE)
+                    .geodesic(true));
+
+            LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+            boundsBuilder.include(currentLatLng);
+            boundsBuilder.include(destination);
+
+            gMap.animateCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(), 100));
+        } else {
+            Log.e("HandleSearchQuery", "Nenhuma estação encontrada para a consulta: " + query);
+        }
     }
 
     @Override
@@ -282,10 +451,66 @@ public class activity_main extends AppCompatActivity implements OnMapReadyCallba
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if(requestCode == FINE_PERMISSION_CODE){
             if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                getLastLocation();
+               getLastLocation();
             } else {
                 Toast.makeText(this,"Permissão de Localização Negada, por favor aceite as permissões",Toast.LENGTH_SHORT).show();
             }
         }
     }
+
+    private void setupLocationUpdates() {
+        // Configuração da Localização
+        LocationSettingsRequest locationSettingsRequest = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest)
+                .build();
+
+        // Verificar as configurações de Localização
+        SettingsClient settingsClient = LocationServices.getSettingsClient(this);
+        settingsClient.checkLocationSettings(locationSettingsRequest)
+                .addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
+                    @Override
+                    public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
+                        if (task.isSuccessful()) {
+                            // As configurações de Localização estão habilitadas
+                            if (ActivityCompat.checkSelfPermission(
+                                    activity_main.this,
+                                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                                    ActivityCompat.checkSelfPermission(
+                                            activity_main.this,
+                                            Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                // Solicitar permissões se não foram concedidas
+                                ActivityCompat.requestPermissions(
+                                        activity_main.this,
+                                        new String[]{
+                                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                                Manifest.permission.ACCESS_COARSE_LOCATION
+                                        },
+                                        REQUEST_CHECK_CODE
+                                );
+                                return;
+                            }
+
+                            // Iniciar as atualizações de localização
+                            fusedLocationProviderClient.requestLocationUpdates(
+                                    locationRequest, // Configuração da solicitação de localização
+                                    locationCallback, // Callback para processar os resultados
+                                    Looper.getMainLooper() // Thread principal
+                            );
+
+                        } else {
+                            // Lidar com configurações de localização desativadas
+                            try {
+                                ResolvableApiException resolvableApiException = (ResolvableApiException) task.getException();
+                                resolvableApiException.startResolutionForResult(
+                                        activity_main.this,
+                                        REQUEST_CHECK_CODE
+                                );
+                            } catch (IntentSender.SendIntentException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+    }
+
 }

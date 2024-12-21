@@ -1,10 +1,10 @@
 package com.lambdacode.spring.boot.crud.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -17,6 +17,10 @@ public class User {
     private Integer id_usuario;
     private String nome;
     private String email;
-    private String palavra_passe; // Nome mais claro para senha
-    private Integer pontuacao; // Mantido para lógica futura de pontuação
+    private String palavra_passe;
+    private Integer pontuacao;
+
+    // Relacionamento com TrajectoryEntity
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Trajectory> trajectories = new ArrayList<>();
 }

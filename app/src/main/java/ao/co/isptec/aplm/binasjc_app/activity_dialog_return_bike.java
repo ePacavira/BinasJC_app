@@ -24,6 +24,9 @@ public class activity_dialog_return_bike extends AppCompatActivity {
     private int id;
     private String station;
 
+    //
+    private boolean vedt;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +51,7 @@ public class activity_dialog_return_bike extends AppCompatActivity {
                 idString = bike_id.getText().toString();
                 station = station_name.getText().toString();
                 validate(idString,station);
+                vedt = validate(idString,station);
 
             }
         });
@@ -80,5 +84,29 @@ public class activity_dialog_return_bike extends AppCompatActivity {
         }
 
         return isValid;
+    }
+
+    public EditText getStation_name() {
+        return station_name;
+    }
+
+    public void setStation_name(EditText station_name) {
+        this.station_name = station_name;
+    }
+
+    public String getStation() {
+        return station;
+    }
+
+    public void setStation(String station) {
+        this.station = station;
+    }
+
+    public boolean isVedt() {
+        return vedt;
+    }
+
+    public void setVedt(boolean vedt) {
+        this.vedt = vedt;
     }
 }

@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -21,7 +22,9 @@ public class activity_bike_list extends AppCompatActivity {
 
     ListView lstvwBike07;
     int[] arrNo = new int[]{1,2,3,4,5};
-    ArrayList<String> arrNames = new ArrayList<>();
+    private ArrayList<String> arrNames = new ArrayList<>();
+    private TextView stationname;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +36,14 @@ public class activity_bike_list extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        stationname = findViewById(R.id.stationname);
+        Intent intent = getIntent();
+        String name = intent.getStringExtra("STATION_NAME");
+
+        // Atualizar o texto do TextView
+
+            stationname.setText(name);
+
 
         lstvwBike07 = findViewById(R.id.lstvwBike07);
 
@@ -68,7 +79,7 @@ public class activity_bike_list extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_bike_list.this, activity_station.class);
+                Intent intent = new Intent(activity_bike_list.this, activity_main.class);
                 startActivity(intent);
                 finish();
                 Toast.makeText(activity_bike_list.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();

@@ -25,7 +25,7 @@
 
         <activity
             android:name=".activity_list_chat"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".activity_chat"
             android:exported="false" />
@@ -37,7 +37,7 @@
             android:exported="false" />
         <activity
             android:name=".activity_dialog_return_bike"
-            android:exported="true" />
+            android:exported="false" />
         <activity
             android:name=".activity_reservation_history"
             android:exported="false" />
@@ -67,7 +67,7 @@
             android:exported="false" />
         <activity
             android:name=".activity_main"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activity_profile"
             android:exported="true" />

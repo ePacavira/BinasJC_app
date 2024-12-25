@@ -9,11 +9,11 @@ public class User {
         private String email;
         private String palavra_passe;
         private int pontuacao;
-        /*private List<Trajectory> trajectories = new ArrayList<>();
+        private List<Trajectory> trajectories = new ArrayList<>();
 
         public void addTrajectory(Trajectory trajectory) {
             this.trajectories.add(trajectory);
-        }*/
+        }
         // Getters e setters
         public int getId() {
             return id;

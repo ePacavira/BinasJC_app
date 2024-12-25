@@ -30,7 +30,8 @@
             android:name=".activity_chat"
             android:exported="false" />
         <activity
-            android:name=".Map"/>
+            android:name=".Map"
+            android:exported="true"/>
 
         <activity
             android:name=".activity_dialog_reservation_bike"
@@ -67,7 +68,7 @@
             android:exported="false" />
         <activity
             android:name=".activity_home"
-            android:exported="false" />
+            android:exported="true" />
 
         <activity
             android:name=".activity_profile"

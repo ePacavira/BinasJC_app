@@ -20,7 +20,10 @@ public class User {
     private String palavra_passe;
     private Integer pontuacao;
 
-    // Relacionamento com TrajectoryEntity
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Trajectory> trajectories = new ArrayList<>();
+    private List<Bike> reservedBikes = new ArrayList<>();
+
+    /* Relacionamento com TrajectoryEntity
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Trajectory> trajectories = new ArrayList<>();*/
 }

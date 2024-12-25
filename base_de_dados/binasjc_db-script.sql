@@ -7,14 +7,14 @@ USE binasjc_db;
 -- Tabela Usuarios
 CREATE TABLE usuarios (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
+    nometrajectory_pointstrajectoriastrajectorias VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     palavra_passe INT DEFAULT 1234,
     pontuacao INT DEFAULT 0
 );
 
 -- Tabela Estacoes
-CREATE TABLE estacoes (
+/*CREATE TABLE estacoes (
     id_estacao INT AUTO_INCREMENT PRIMARY KEY,
     nome_estacao VARCHAR(255) NOT NULL,
     localizacao VARCHAR(255) NOT NULL
@@ -36,7 +36,7 @@ CREATE TABLE trajetorias (
     data_hora_fim DATETIME,
     distancia FLOAT,
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-);
+);*/
 
 -- Tabela Transferencias_de_Pontos
 CREATE TABLE transferencias_de_Pontos (
@@ -48,3 +48,5 @@ CREATE TABLE transferencias_de_Pontos (
     FOREIGN KEY (id_usuario_envia) REFERENCES usuarios(id_usuario),
     FOREIGN KEY (id_usuario_recebe) REFERENCES usuarios(id_usuario)
 );
+
+select * from usuarios;

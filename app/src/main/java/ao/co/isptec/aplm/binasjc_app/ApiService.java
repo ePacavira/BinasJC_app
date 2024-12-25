@@ -29,4 +29,7 @@ public interface ApiService {
 
     @PUT("auth/update-password/{id}")
     Call<AuthResponse> updatePassword(@Path("id") int userId, @Body PasswordPayload passwordPayload);
+
+    @POST("/trajectories/add")
+    Call<Trajectory> save(@Body Trajectory trajectorie);
 }

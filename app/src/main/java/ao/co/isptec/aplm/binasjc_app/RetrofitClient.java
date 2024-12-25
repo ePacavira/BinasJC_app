@@ -17,4 +17,7 @@ public class RetrofitClient {
         }
         return retrofit;
     }
+    public Retrofit getRetrofit() {
+        return getRetrofitInstance();
+    }
 }

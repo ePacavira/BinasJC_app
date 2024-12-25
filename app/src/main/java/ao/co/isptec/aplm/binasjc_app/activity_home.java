@@ -3,6 +3,7 @@ package ao.co.isptec.aplm.binasjc_app;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 
@@ -36,6 +37,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import android.util.Log;
 
+import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -59,9 +61,13 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.tasks.Task;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 import retrofit2.Call;
@@ -79,13 +85,19 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
     private GoogleMap gMap;
     private final int FINE_PERMISSION_CODE = 1;
     private final static int REQUEST_CHECK_CODE = 1001;
-    Location currentLocation;
-    FusedLocationProviderClient fusedLocationProviderClient;
+    private Location currentLocation;
+    private FusedLocationProviderClient fusedLocationProviderClient;
     private SearchView mapSearchView;
     private HashMap<String,LatLng>predefinedLocations; //conjunto de Localizações que corresponderão as localizações das estações
-    private  Marker currentMarket;
+    private Marker currentMarket;
     private ArrayList<Trajectory> allTrajectories = new ArrayList<>();
     private LocationCallback locationCallback;
+    private User user = new User();
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private Trajectory currentTrajectory;
+    private int totalPoints = 0;
+
+
     private LocationRequest locationRequest = new LocationRequest.Builder(
             LocationRequest.PRIORITY_HIGH_ACCURACY,
             30000
@@ -157,14 +169,15 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity_home.this);
         getLastLocation();
 
-        // Configura o mapa
+        // Configurar o mapa
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.id_map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
-        locationCallback = new LocationCallback() {
-            private Trajectory currentTrajectory;
 
+
+        locationCallback = new LocationCallback() {
+            @SuppressLint("NewApi")
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult != null) {
@@ -174,12 +187,11 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
                         // Inicia a trajetória, se necessário
                         if (currentTrajectory == null) {
-                            currentTrajectory = new Trajectory(currentLatLng);
+                            currentTrajectory = new Trajectory("EstacaoInicial", "EstacaoFinal");
                             Log.d("Trajectory", "Trajetória iniciada em: " + currentLatLng);
                         }
 
                         // Adiciona o ponto atual à trajetória
-                        currentTrajectory.addPoint(currentLatLng);
                         Log.d("Trajectory", "Ponto adicionado: " + currentLatLng);
 
                         // Verifica se o usuário chegou a uma estação
@@ -194,19 +206,43 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
                             // Verifica se está dentro do raio da estação
                             if (results[0] <= 20) {
-                                currentTrajectory.setEndLocation(stationLatLng);
-                                Log.d("Trajectory", "Trajetória finalizada na estação: " + stationName);
-
-                                // Salva a trajetória e reinicia o rastreamento
+                                //verificar a logica de Levantamento e devolução da Bicicleta
+                                /*Armazenamento  do ponto actual na estrutura*/
                                 allTrajectories.add(currentTrajectory);
+
+                                //Mandar ao servidor
+                                //Enviar no Servidor simplemente quando a bicicleta for devolvida!
+                                Log.d("Trajectory","Enviando trajectoria o Servidor");
+
+                                RetrofitClient retrofitService = new RetrofitClient();
+                                ApiService trajectoriApi = retrofitService.getRetrofit().create(ApiService.class);
+
+                                trajectoriApi.save(currentTrajectory).enqueue(new Callback<Trajectory>() {
+                                    @Override
+                                    public void onResponse(Call<Trajectory> call, Response<Trajectory> response) {
+                                        if (response.isSuccessful()) {
+                                            Log.d("API", "Trajetória enviada com sucesso: " + response.body());
+                                        } else {
+                                            Log.d("API", "Código de resposta: " + response.code());
+                                            Log.e("API", "Erro no servidor: " + response.code() + ", " + response.errorBody());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<Trajectory> call, Throwable t) {
+                                        Log.e("API", "Erro ao enviar a trajetória", t);
+                                    }
+                                });
+
+
+                                /*reinicia o rastreamento*/
                                 currentTrajectory = null;
                                 Toast.makeText(activity_home.this, "Você chegou na estação: " + stationName, Toast.LENGTH_SHORT).show();
                                 break;
                             }
                         }
 
-                        int totalPoints = 0;
-                        List<LatLng> points = currentTrajectory.getIntermediatePoints();
+                       /* List<LatLng> points = currentTrajectory.getIntermediatePoints();
                         for (int i = 1; i < points.size(); i++) {
                             float[] results = new float[1];
                             LatLng currentPoint = points.get(i);
@@ -220,15 +256,18 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
                             if (results[0] >= 10) {
                                 totalPoints++;
+                                user.setPontuacao(totalPoints);
                                 Log.d("MyPoint","Pontuação actual: " + totalPoints);
                             }
-                        }
+                        }*/
                         pontuacao += totalPoints;
                         Log.d("LocationUpdate", "Lat: " + location.getLatitude() + ", Lng: " + location.getLongitude());
                     }
                 }
-                showAllPoint();
+                //showAllPoint();
             }
+
+
         };
 
 
@@ -338,7 +377,16 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             }
         });
     }
-    private void showAllPoint(){
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (executorService != null) {
+            executorService.shutdown();
+        }
+    }
+
+    /*private void showAllPoint(){
         for(Trajectory trajectory : allTrajectories){
             if(trajectory != null){
                 Log.e("TrajectoryPoints", trajectory.getEndLocation().toString());
@@ -347,7 +395,7 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
             }
         }
-    }
+    }*/
 
     private void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -382,7 +430,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             Toast.makeText(activity_home.this, "Localização não disponível", Toast.LENGTH_SHORT).show();
         }
 
-        // Aguarda que o layout do mapa esteja pronto
         gMap.setOnMapLoadedCallback(() -> {
             showAllStations();
             Log.e("Verificar estações proximas", "FUNÇÃO showAllStations CHAMADA!!!!!!!!");

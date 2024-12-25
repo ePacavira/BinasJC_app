@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,17 +21,10 @@ public class Trajectory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_trajectory;
-
-    private double startLat;
-    private double startLng;
-    private double endLat;
-    private double endLng;
-    private long startTime;
-    private long endTime;
+    private String stationStart;
+    private String stationEnd;
 
     //Relacionamento com utilizador
-    @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private User user;
+
 
 }

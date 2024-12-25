@@ -2,66 +2,41 @@ package ao.co.isptec.aplm.binasjc_app;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Trajectory {
-    //private LatLng startLocation;
-    private LatLng endLocation;
-    private List <LatLng> intermediatePoints;
-    private long startTime;
-    private long endTime;
+   // private List <LatLng> intermediatePoints;
     private String stationStart;
     private String stationEnd;
 
-
-    public Trajectory(LatLng startLocation) {
-        this.intermediatePoints = new ArrayList<>();
-        this.startTime = System.currentTimeMillis(); // Timestamp de início
+    public Trajectory(String stationEnd, String stationStart) {
+        this.stationEnd = stationEnd;
+        this.stationStart = stationStart;
     }
 
-    public void addPoint(LatLng point) {
-        intermediatePoints.add(point);
+    public String getStationStart() {
+        return stationStart;
     }
 
-    /*public LatLng getStartLocation() {
-        return startLocation;
+    public void setStationStart(String stationStart) {
+        this.stationStart = stationStart;
     }
 
-    public void setStartLocation(LatLng startLocation) {
-        this.startLocation = startLocation;
-    }*/
-
-    public LatLng getEndLocation() {
-        return endLocation;
+    public String getStationEnd() {
+        return stationEnd;
     }
 
-    public void setEndLocation(LatLng endLocation) {
-        this.endLocation = endLocation;
-        this.endTime = System.currentTimeMillis();
+    public void setStationEnd(String stationEnd) {
+        this.stationEnd = stationEnd;
     }
 
-    public List<LatLng> getIntermediatePoints() {
+   /* public List<LatLng> getIntermediatePoints() {
         return intermediatePoints;
     }
 
     public void setIntermediatePoints(List<LatLng> intermediatePoints) {
         this.intermediatePoints = intermediatePoints;
-    }
-
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
-
-    public long getEndTime() {
-        return endTime;
-    }
-
-    public void setEndTime(long endTime) {
-        this.endTime = endTime;
-    }
+    }*/
 }

@@ -79,7 +79,7 @@ public class activity_bike_list extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(activity_bike_list.this, activity_main.class);
+                Intent intent = new Intent(activity_bike_list.this, activity_home.class);
                 startActivity(intent);
                 finish();
                 Toast.makeText(activity_bike_list.this, "Exectudado com Sucesso!!", Toast.LENGTH_SHORT).show();

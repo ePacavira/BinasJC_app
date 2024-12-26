@@ -32,4 +32,7 @@ public interface ApiService {
 
     @POST("/trajectories/add")
     Call<Trajectory> save(@Body Trajectory trajectorie);
+
+    @GET("/estacoes")
+    Call<List<Estacao>>getAllEstacoes();
 }

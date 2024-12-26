@@ -118,7 +118,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
         // Obter instância de Retrofit
         Retrofit retrofit = RetrofitClient.getRetrofitInstance();
-
         // Criar a interface do serviço da API
         ApiService apiService = retrofit.create(ApiService.class);
 
@@ -155,15 +154,31 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         ImageView searchIcon = mapSearchView.findViewById(searchIconId);
         searchIcon.setColorFilter(getResources().getColor(R.color.white), PorterDuff.Mode.SRC_IN); // Define a cor do ícone
 
+        //PEGAR AS ESTAÇÕES
         predefinedLocations = new HashMap<>();
-        // Adiciona Estações predefinidas
-        predefinedLocations.put("EstacaoProxima1", new LatLng(-8.8370, 13.2885)); // < 150 metros
-        predefinedLocations.put("EstacaoProxima2", new LatLng(-8.8355, 13.2890)); // < 150 metros
-        predefinedLocations.put("EstacaoProxima3", new LatLng(-8.8365, 13.2880)); // < 150 metros
 
-        predefinedLocations.put("EstacaoDistante1", new LatLng(-8.8600, 13.3100)); // > 150 metros
-        predefinedLocations.put("EstacaoDistante2", new LatLng(-8.8000, 13.3300)); // > 150 metros
+        apiService.getAllEstacoes().enqueue(new Callback<List<Estacao>>() {
+            @Override
+            public void onResponse(Call<List<Estacao>> call, Response<List<Estacao>> response) {
+                if (response.isSuccessful()){
+                    //obter a lista de estacoes
+                    List<Estacao> estacoes = response.body();
+                    for (Estacao estacao : estacoes) {
+                        Log.d("Estacao", "ID: " + estacao.getIdEstacao() + ", Nome: " + estacao.getNome());
+                        // Adiciona Estações predefinidas
+                        predefinedLocations.put(estacao.getNome(), new LatLng((estacao.getLatitude()), estacao.getLongitude()));
 
+                    }
+                }else{
+                    Log.e("Erro", "Falha ao obter estações: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Estacao>> call, Throwable t) {
+                Log.e("Erro", "Erro na chamada à API: " + t.getMessage());
+            }
+        });
 
         // Inicializa FusedLocationProviderClient
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity_home.this);
@@ -174,7 +189,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
-
 
         locationCallback = new LocationCallback() {
             @SuppressLint("NewApi")

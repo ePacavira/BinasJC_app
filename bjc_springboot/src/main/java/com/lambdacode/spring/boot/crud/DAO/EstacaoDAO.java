@@ -21,6 +21,10 @@ public class EstacaoDAO {
     public Estacao getById(int id) {
        return estacaoRepository.findById(id).orElse(null);
     }
+
+    /*public Estacao getByNome(String nome) {
+
+    }*/
     public void delete(Estacao estacao) {
         estacaoRepository.delete(estacao);
     }

@@ -15,8 +15,30 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 @SpringBootTest
 class SpringBootCrudApplicationTests {
+    @Autowired
+    private TrajectoryDAO trajectoryDAO;
 
     @Autowired
+    UserRepository userRepository;
+
+    @Test
+    void TrajectoryTest() {
+
+        User user = userRepository.findByEmail("eunice@gmail.com")
+                .orElseThrow(()-> new RuntimeException("Usuario nao encontrado"));
+
+
+        Trajectory trajectory = new Trajectory();
+        trajectory.setStationEnd("EstacaoProxima1");
+        trajectory.setStationEnd("EstacaoProxima2");
+        trajectory.setDistance(234.09f);
+        trajectory.setUser(user);
+
+        trajectoryDAO.save(trajectory);
+
+    }
+
+   /* @Autowired
     private BikeDAO bikeDAO;
 
     @Autowired
@@ -34,6 +56,6 @@ class SpringBootCrudApplicationTests {
         bike.setEstacao(estacao); // Definindo a estacao válida
 
         bikeDAO.save(bike);
-    }
+    }*/
 }
 

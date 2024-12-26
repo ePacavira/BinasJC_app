@@ -15,7 +15,7 @@ public class EstacaoController {
     private EstacaoDAO estacaoDAO;
 
     @GetMapping
-    public List<Estacao> getAll() {
+    public List<Estacao> getAllEstacoes() {
         return estacaoDAO.getAllEstacao();
     }
 

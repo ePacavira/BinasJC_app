@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/trajectories")
@@ -22,6 +23,12 @@ public class TrajectoryController {
     @GetMapping
     public List<Trajectory> getAll() {
         return trajectoryDAO.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Trajectory> getTrajectoryById(@PathVariable int id) {
+        Trajectory trajectory = trajectoryDAO.getById(id);
+        return ResponseEntity.ok(trajectory);
     }
 
     @DeleteMapping("/delete/{id}")

@@ -21,6 +21,10 @@ public class Estacao {
         return idEstacao;
     }
 
+    public String getNome() {
+        return nome;
+    }
+
     //Relacionamento com Bike
     @OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bike> bikes = new ArrayList<>();

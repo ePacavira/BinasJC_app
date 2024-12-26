@@ -16,23 +16,38 @@ import java.util.List;
 public class TrajectoryDAO {
 
     @Autowired
-    private TrajectoryRepository repository;
+    private TrajectoryRepository trajectorieRepository;
 
     public  void save(Trajectory trajectory){
-        repository.save(trajectory);
+        trajectorieRepository.save(trajectory);
     }
-    public  void delete(Trajectory trajectory){
-        repository.delete(trajectory);
+
+    public Trajectory getById(int id){
+        return trajectorieRepository.findById(id).get();
     }
-    public List<Trajectory> getAllTrajectory(){
-        List<Trajectory>trajectories = new ArrayList<Trajectory>();
-        Streamable.of(repository.findAll()).forEach(trajectories ::add);
+    public List<Trajectory> getAll(){
+        List<Trajectory>trajectories = new ArrayList<>();
+        trajectorieRepository.findAll().forEach(trajectories::add);
         return trajectories;
     }
-    /*@PostMapping("/trajectories/save")
-    public ResponseEntity<Trajectory> save(@RequestBody Trajectory trajectory) {
-        Trajectory savedTrajectory = repository.save(trajectory);
-        return ResponseEntity.ok(savedTrajectory);
-    }*/
+    public  void delete(Trajectory trajectory){
+        trajectorieRepository.delete(trajectory);
+    }
+    public  void deleteById(int id){
+        if(trajectorieRepository.existsById(id)){
+            trajectorieRepository.deleteById(id);
+        }else{
+            throw new RuntimeException("trajectoria not found");
+        }
+    }
+
+    public Trajectory update(int id){
+        if(trajectorieRepository.existsById(id)){
+            return trajectorieRepository.save(getById(id));
+        }else{
+            throw new RuntimeException("trajectoria not found");
+        }
+    }
+
 
 }

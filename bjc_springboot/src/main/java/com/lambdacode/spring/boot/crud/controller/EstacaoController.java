@@ -19,6 +19,12 @@ public class EstacaoController {
         return estacaoDAO.getAllEstacao();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Estacao> getById(@PathVariable int id) {
+        Estacao estacao = estacaoDAO.getById(id);
+        return ResponseEntity.ok().body(estacao);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<String>  save(@RequestBody Estacao estacao) {
         estacaoDAO.save(estacao);

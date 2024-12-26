@@ -4,6 +4,7 @@ import com.lambdacode.spring.boot.crud.entity.Bike;
 import com.lambdacode.spring.boot.crud.entity.Estacao;
 import com.lambdacode.spring.boot.crud.entity.User;
 import com.lambdacode.spring.boot.crud.repository.BikeRepository;
+import com.lambdacode.spring.boot.crud.repository.EstacaoRepository;
 import com.lambdacode.spring.boot.crud.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,9 +20,22 @@ public class BikeDAO {
     @Autowired
     private UserRepository userRepository;
 
-    public void save (Bike bike){
-        bikeRepository.save(bike);
+    @Autowired
+    EstacaoRepository estacaoRepository;
+    @Autowired
+    private EstacaoDAO estacaoDAO;
+
+    public void save(Bike bike) {
+        Estacao estacao = estacaoDAO.getById(bike.getEstacao().getIdEstacao());
+        if (estacao == null) {
+            throw new RuntimeException("Estacao not found");
+        }else{
+            bike.setUser(null);
+            bikeRepository.save(bike);
+
+        }
     }
+
     public Bike getById (int id){
         return bikeRepository.findById(id).get();
     }

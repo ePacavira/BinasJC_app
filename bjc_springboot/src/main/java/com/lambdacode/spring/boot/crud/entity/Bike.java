@@ -13,9 +13,19 @@ public class Bike {
     @JoinColumn(name = "idEstacao", nullable = false)
     private Estacao estacao;
 
-    @ManyToOne
+    @OneToOne(optional = true)
     @JoinColumn(name = "id_usuario", nullable = true)
     private User user;
 
+    public Estacao getEstacao() {
+        return estacao;
+    }
 
+    public void setEstacao(Estacao estacao) {
+        this.estacao = estacao;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

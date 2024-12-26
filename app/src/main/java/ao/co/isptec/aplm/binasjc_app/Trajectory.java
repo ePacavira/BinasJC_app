@@ -39,4 +39,14 @@ public class Trajectory {
     public void setIntermediatePoints(List<LatLng> intermediatePoints) {
         this.intermediatePoints = intermediatePoints;
     }*/
+
+
+    /*public List<Point> convertLatLngToPoints(List<LatLng> latLngs) {
+        List<Point> points = new ArrayList<>();
+        for (LatLng latLng : latLngs) {
+            points.add(new Point(latLng.latitude, latLng.longitude));
+        }
+        return points;
+    }*/
+
 }

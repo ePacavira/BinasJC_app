@@ -16,10 +16,14 @@ public class BikeController {
     private BikeDAO bikeDAO;
 
     // Endpoint para salvar uma bicicleta
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<String> saveBike(@RequestBody Bike bike) {
-        bikeDAO.save(bike);
-        return ResponseEntity.ok("Bike saved successfully");
+        try {
+            bikeDAO.save(bike);
+            return ResponseEntity.ok("Bike saved successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
@@ -39,7 +43,6 @@ public class BikeController {
         return ResponseEntity.ok(bikes);
     }
 
-    // Endpoint para deletar uma bicicleta pelo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBikeById(@PathVariable int id) {
         try {

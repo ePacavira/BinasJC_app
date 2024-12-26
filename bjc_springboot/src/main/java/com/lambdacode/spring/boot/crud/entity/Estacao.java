@@ -13,8 +13,13 @@ public class Estacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idEstacao;
     private String nome;
+
     private double latitude;
     private double longitude;
+
+    public int getIdEstacao() {
+        return idEstacao;
+    }
 
     //Relacionamento com Bike
     @OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true)

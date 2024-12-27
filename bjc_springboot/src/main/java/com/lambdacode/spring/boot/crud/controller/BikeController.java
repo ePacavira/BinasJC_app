@@ -15,11 +15,10 @@ public class BikeController {
     @Autowired
     private BikeDAO bikeDAO;
 
-    // Endpoint para salvar uma bicicleta
-    @PostMapping("/add")
-    public ResponseEntity<String> saveBike(@RequestBody Bike bike) {
+    @PostMapping("/add/{idEstacao}")
+    public ResponseEntity<String> saveBike(@RequestBody Bike bike, @PathVariable int idEstacao) {
         try {
-            bikeDAO.save(bike);
+            bikeDAO.save(bike,idEstacao);
             return ResponseEntity.ok("Bike saved successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(e.getMessage());
@@ -32,15 +31,9 @@ public class BikeController {
         return ResponseEntity.ok(bike);
     }
 
-    /*@GetMapping
+    @GetMapping
     public List<Bike> getBikes() {
         return bikeDAO.getAll();
-    }*/
-
-    @GetMapping
-    public ResponseEntity<List<Bike>> getAllBikes() {
-        List<Bike> bikes = bikeDAO.getAll();
-        return ResponseEntity.ok(bikes);
     }
 
     @DeleteMapping("/{id}")
@@ -53,14 +46,26 @@ public class BikeController {
         }
     }
 
-    // Endpoint para reservar uma bicicleta
     @PostMapping("/reserve")
-    public ResponseEntity<String> reserveBike(@RequestParam Long userId, @RequestParam Long bikeId) {
+    public ResponseEntity<String> reserveBike(@RequestParam int userId, @RequestParam int bikeId, @RequestParam int idEstacao) {
         try {
-            bikeDAO.reserveBike(userId, bikeId);
+            bikeDAO.reservarBike(userId, bikeId,idEstacao);
             return ResponseEntity.ok("Bike reserved successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
     }
+
+    @PostMapping("/devolver")
+    public ResponseEntity<String> devolverBike(@RequestParam int userId, @RequestParam int idBike, @RequestParam int idEstacao) {
+        try {
+            bikeDAO.DevolverBike(userId, idBike, idEstacao);
+            return ResponseEntity.ok("Bike returned successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+    }
+
+
+
 }

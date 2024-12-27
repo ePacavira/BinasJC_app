@@ -12,14 +12,6 @@ CREATE TABLE usuarios (
     palavra_passe INT DEFAULT 1234,
     pontuacao INT DEFAULT 0
 );
-CREATE TABLE bikes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_estacao INT NOT NULL,
-    id_user INT NOT NULL DEFAULT 0,  -- Coloque o valor padrão aqui
-    FOREIGN KEY (id_user) REFERENCES users(id),  -- Caso tenha relacionamento com a tabela users
-    FOREIGN KEY (id_estacao) REFERENCES estacoes(id)
-);
-
 -- Tabela Estacoes
 /*CREATE TABLE estacoes (
     id_estacao INT AUTO_INCREMENT PRIMARY KEY,

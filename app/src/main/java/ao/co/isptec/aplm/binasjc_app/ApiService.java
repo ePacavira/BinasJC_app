@@ -31,8 +31,17 @@ public interface ApiService {
     Call<AuthResponse> updatePassword(@Path("id") int userId, @Body PasswordPayload passwordPayload);
 
     @POST("/trajectories/add")
-    Call<Trajectory> save(@Body Trajectory trajectorie);
+    Call<Trajectory> saveTrajectory(@Body Trajectory trajectorie);
 
     @GET("/estacoes")
     Call<List<Estacao>>getAllEstacoes();
+
+    @GET
+    Call<List<Bike>>getBikes();
+
+    @GET("/user/{userId}")
+    Call<Reserva>findReservaByUserId(@Path("id") int userId);
+
+
+
 }

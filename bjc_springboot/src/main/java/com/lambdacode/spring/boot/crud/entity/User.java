@@ -16,18 +16,17 @@ public class User {
     @GeneratedValue
     private Integer id_usuario;
     private String nome;
+    @Column(unique = true)
     private String email;
     private String palavra_passe;
-    private Integer pontuacao;
-
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "idBike", nullable = true)
-    private Bike bike;
+    private Integer pontuacao ;
 
     //Relacionamento com TrajectoryEntity
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Trajectory> trajectories = new ArrayList<>();
 
-
+    public void adicionarTrajectory(Trajectory trajectory) {
+        trajectories.add(trajectory);
+    }
 
 }

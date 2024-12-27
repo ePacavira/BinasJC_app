@@ -56,4 +56,19 @@ public class EstacaoController {
         }
 
     }
+
+    @PostMapping("/{idEstacao}/adicionarBike/{idBike}")
+    public ResponseEntity<String> adicionarBike(@PathVariable int idEstacao, @PathVariable int idBike) {
+        try {
+            // Obter a estação pelo ID
+            Estacao estacao = estacaoDAO.getById(idEstacao);
+            if (estacao == null) {
+                return ResponseEntity.badRequest().body("Estação com ID " + idEstacao + " não encontrada.");
+            }
+            estacaoDAO.adicionarBike(idBike, idEstacao);
+            return ResponseEntity.ok("Bike adicionada à estação com sucesso.");
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body("Erro ao adicionar bike: " + ex.getMessage());
+        }
+    }
 }

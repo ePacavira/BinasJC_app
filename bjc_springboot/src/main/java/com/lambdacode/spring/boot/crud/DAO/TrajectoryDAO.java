@@ -18,7 +18,7 @@ public class TrajectoryDAO {
     @Autowired
     private TrajectoryRepository trajectorieRepository;
 
-    public  void save(Trajectory trajectory){
+    public  void saveTrajectory(Trajectory trajectory){
         trajectorieRepository.save(trajectory);
     }
 

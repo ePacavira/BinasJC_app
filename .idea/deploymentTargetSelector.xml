@@ -15,6 +15,14 @@
       </SelectionState>
       <SelectionState runConfigName="activity_home">
         <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2024-12-26T15:20:42.716456200Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Eunice Numbi\.android\avd\BinasJC_.avd" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
       </SelectionState>
       <SelectionState runConfigName="Map">
         <option name="selectionMode" value="DROPDOWN" />

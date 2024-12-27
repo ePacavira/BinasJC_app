@@ -64,6 +64,7 @@ import com.google.android.gms.tasks.Task;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -94,8 +95,13 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
     private LocationCallback locationCallback;
     private User user = new User();
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private Trajectory currentTrajectory;
+    private Trajectory currentTrajectory = new Trajectory();
     private int totalPoints = 0;
+
+    // Obter instância de Retrofit
+    private Retrofit retrofit = RetrofitClient.getRetrofitInstance();
+    // Criar a interface do serviço da API
+    private ApiService apiService = retrofit.create(ApiService.class);
 
 
     private LocationRequest locationRequest = new LocationRequest.Builder(
@@ -116,10 +122,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         int userId = sharedPreferences.getInt("USER_ID", -1);
         int userPoints = sharedPreferences.getInt("USER_POINTS", 0); // Valor padrão: 0
 
-        // Obter instância de Retrofit
-        Retrofit retrofit = RetrofitClient.getRetrofitInstance();
-        // Criar a interface do serviço da API
-        ApiService apiService = retrofit.create(ApiService.class);
 
         // Fazer a chamada à API
         Call<User> call = apiService.getUserById(userId);
@@ -155,20 +157,23 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         searchIcon.setColorFilter(getResources().getColor(R.color.white), PorterDuff.Mode.SRC_IN); // Define a cor do ícone
 
         //PEGAR AS ESTAÇÕES
+        // Inicializa FusedLocationProviderClient
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity_home.this);
+        getLastLocation();
         predefinedLocations = new HashMap<>();
-
         apiService.getAllEstacoes().enqueue(new Callback<List<Estacao>>() {
             @Override
             public void onResponse(Call<List<Estacao>> call, Response<List<Estacao>> response) {
                 if (response.isSuccessful()){
                     //obter a lista de estacoes
                     List<Estacao> estacoes = response.body();
+                    Log.d("EstacaoDebug", "Número de estações recebidas: " + estacoes.size());
                     for (Estacao estacao : estacoes) {
-                        Log.d("Estacao", "ID: " + estacao.getIdEstacao() + ", Nome: " + estacao.getNome());
                         // Adiciona Estações predefinidas
-                        predefinedLocations.put(estacao.getNome(), new LatLng((estacao.getLatitude()), estacao.getLongitude()));
-
+                        predefinedLocations.put(estacao.getNome(), new LatLng(-(estacao.getLatitude()), estacao.getLongitude()));
+                        Log.d("EstacaoDebug", "ID: " + estacao.getIdEstacao() + ", Nome: " + estacao.getNome() + " Latitude: " + estacao.getLatitude() + " Longitude: " + estacao.getLongitude());
                     }
+                    Log.d("EstacaoDebug", "Tamanho final do predefinedLocations: " + predefinedLocations.size());
                 }else{
                     Log.e("Erro", "Falha ao obter estações: " + response.code());
                 }
@@ -179,10 +184,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                 Log.e("Erro", "Erro na chamada à API: " + t.getMessage());
             }
         });
-
-        // Inicializa FusedLocationProviderClient
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity_home.this);
-        getLastLocation();
 
         // Configurar o mapa
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.id_map);
@@ -199,15 +200,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                     if (location != null) {
                         LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-                        // Inicia a trajetória, se necessário
-                        if (currentTrajectory == null) {
-                            currentTrajectory = new Trajectory("EstacaoInicial", "EstacaoFinal");
-                            Log.d("Trajectory", "Trajetória iniciada em: " + currentLatLng);
-                        }
-
-                        // Adiciona o ponto atual à trajetória
-                        Log.d("Trajectory", "Ponto adicionado: " + currentLatLng);
-
                         // Verifica se o usuário chegou a uma estação
                         for (String stationName : predefinedLocations.keySet()) {
                             LatLng stationLatLng = predefinedLocations.get(stationName);
@@ -220,34 +212,37 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
                             // Verifica se está dentro do raio da estação
                             if (results[0] <= 20) {
-                                //verificar a logica de Levantamento e devolução da Bicicleta
-                                /*Armazenamento  do ponto actual na estrutura*/
-                                allTrajectories.add(currentTrajectory);
+                                //o rastreo da localização do dispositivo começa aqui
+                                //devo verificar se o utilizador possui uma reserva
+                               apiService.getBikes().enqueue(new Callback<List<Bike>>() {
+                                   @Override
+                                   public void onResponse(Call<List<Bike>> call, Response<List<Bike>> response) {
+                                       List<Bike>bikes = response.body();
 
-                                //Mandar ao servidor
-                                //Enviar no Servidor simplemente quando a bicicleta for devolvida!
-                                Log.d("Trajectory","Enviando trajectoria o Servidor");
-
-                                RetrofitClient retrofitService = new RetrofitClient();
-                                ApiService trajectoriApi = retrofitService.getRetrofit().create(ApiService.class);
-
-                                trajectoriApi.save(currentTrajectory).enqueue(new Callback<Trajectory>() {
-                                    @Override
-                                    public void onResponse(Call<Trajectory> call, Response<Trajectory> response) {
-                                        if (response.isSuccessful()) {
-                                            Log.d("API", "Trajetória enviada com sucesso: " + response.body());
-                                        } else {
-                                            Log.d("API", "Código de resposta: " + response.code());
-                                            Log.e("API", "Erro no servidor: " + response.code() + ", " + response.errorBody());
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<Trajectory> call, Throwable t) {
-                                        Log.e("API", "Erro ao enviar a trajetória", t);
-                                    }
-                                });
-
+                                       for(Bike bike : bikes){
+                                           if(bike.getIdUser() == userId && bike.getStatus().equals("RESERVADA")){
+                                               //Primeira ida a estacao , levantamento da Bike
+                                               //Registrar a bike como levantada
+                                               currentTrajectory.setStationStart(stationName);
+                                               currentTrajectory.setIdBike(bike.getIdBicicleta());
+                                               currentTrajectory.setLatitudeEnd(currentLocation.getLatitude());
+                                               currentTrajectory.setLongitudeStart(currentLocation.getLongitude());
+                                               currentTrajectory.setUser(user);
+                                           }else if(bike.getIdUser() == userId && bike.getStatus().equals("EM_USO")){
+                                               // a bike já foi usada e está sendo devolvida
+                                               //enviar Trajectoria
+                                               currentTrajectory.setStationEnd(stationName);
+                                               currentTrajectory.setLatitudeEnd(currentLocation.getLatitude());
+                                               currentTrajectory.setLongitudeEnd(currentTrajectory.getLongitudeEnd());
+                                               enviarTrajectoria(currentTrajectory);
+                                           }
+                                       }
+                                   }
+                                   @Override
+                                   public void onFailure(Call<List<Bike>> call, Throwable t) {
+                                        Log.e("BikeErro","Erro ao verificar a Relacao entre a Bike e o usuario");
+                                   }
+                               });
 
                                 /*reinicia o rastreamento*/
                                 currentTrajectory = null;
@@ -256,7 +251,7 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                             }
                         }
 
-                       /* List<LatLng> points = currentTrajectory.getIntermediatePoints();
+                     /*  List<LatLng> points = currentTrajectory.getIntermediatePoints();
                         for (int i = 1; i < points.size(); i++) {
                             float[] results = new float[1];
                             LatLng currentPoint = points.get(i);
@@ -280,11 +275,7 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                 }
                 //showAllPoint();
             }
-
-
         };
-
-
         setupLocationUpdates();
 
         dialog = new Dialog(activity_home.this);
@@ -399,36 +390,20 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             executorService.shutdown();
         }
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getLastLocation();
+    }
 
-    /*private void showAllPoint(){
+    private void showAllPoint(){
         for(Trajectory trajectory : allTrajectories){
             if(trajectory != null){
-                Log.e("TrajectoryPoints", trajectory.getEndLocation().toString());
+                Log.e("TrajectoryPoints", trajectory.getStationEnd().toString());
             }else{
                 Log.e("TrajectoryPoints", "Location is null");
 
             }
-        }
-    }*/
-
-    private void getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationProviderClient.getLastLocation()
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            if (location != null) {
-                                currentLocation = location;
-                                LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                                currentMarket = gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Actual"));
-                                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
-                            } else {
-                                Toast.makeText(activity_home.this, "Localização não disponível", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
         }
     }
 
@@ -440,38 +415,76 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Actual"));
             gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
             getLastLocation();
+            initializeMapWithStations();
         } else {
             Toast.makeText(activity_home.this, "Localização não disponível", Toast.LENGTH_SHORT).show();
         }
+    }
+    private void getLastLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(this, location -> {
+                        if (location != null) {
+                            Log.d("LocationDebug", "Localização obtida com sucesso: " +
+                                    "\nLatitude: " + location.getLatitude() +
+                                    "\nLongitude: " + location.getLongitude() +
+                                    "\nPrecisão: " + location.getAccuracy() +
+                                    "\nTempo: " + new Date(location.getTime()).toString());
+                            currentLocation = location;
+                            LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                            currentMarket = gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Atual"));
+                            gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
+                            initializeMapWithStations();
+                        } else {
+                            Log.e("LocationDebug", "Localização obtida é nula.");
+                            Toast.makeText(activity_home.this, "Localização não disponível", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e("LocationDebug", "Erro ao obter localização: " + e.getMessage()));
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
+        }
+    }
 
-        gMap.setOnMapLoadedCallback(() -> {
+    private void initializeMapWithStations() {
+        Log.d("MapDebug", "initializeMapWithStations - Map: " + (gMap != null) +
+                ", Location: " + (currentLocation != null) +
+                ", Stations: " + (!predefinedLocations.isEmpty()));
+
+        if (gMap != null && currentLocation != null && !predefinedLocations.isEmpty()) {
             showAllStations();
-            Log.e("Verificar estações proximas", "FUNÇÃO showAllStations CHAMADA!!!!!!!!");
-        });
-
+        }
     }
 
     private void showAllStations() {
         if (gMap == null) {
+            Log.d("ShowStations", "Mapa nulo");
             return;
         }
+
+        gMap.clear();
 
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         boolean hasMarkers = false;
         float[] results = new float[1];
 
-        // Certifique-se de que currentLocation não é nulo
-        if (currentLocation != null) {
+        // Adiciona o marcador da localização atual
+        LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        currentMarket = gMap.addMarker(new MarkerOptions()
+                .position(currentLatLng)
+                .title("Localização Atual"));
+        builder.include(currentLatLng);
+
+        if (!predefinedLocations.isEmpty()) {
             for (String stationName : predefinedLocations.keySet()) {
                 LatLng location = predefinedLocations.get(stationName);
 
-                // Obter a distância entre a localização atual e as estações
                 Location.distanceBetween(
                         currentLocation.getLatitude(), currentLocation.getLongitude(),
                         location.latitude, location.longitude, results
                 );
 
-                if (results[0] < 150) { // Comparando a distância real
+                if (results[0] < 2000) {
                     gMap.addMarker(new MarkerOptions()
                             .position(location)
                             .title(stationName)
@@ -480,8 +493,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                     hasMarkers = true;
                 }
             }
-        } else {
-            Log.e("ShowStations", "Localização atual é nula, não é possível calcular distâncias.");
         }
 
         if (hasMarkers) {
@@ -491,13 +502,10 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             } catch (IllegalStateException e) {
                 Log.e("ShowStations", "Erro ao ajustar limites do mapa", e);
             }
-        } else {
-            Log.e("ShowStations", "Nenhum marcador adicionado para ajustar limites.");
         }
 
-        // Adicionando o listener para clique nos marcadores
         gMap.setOnMarkerClickListener(marker -> {
-            if(!currentMarket.getTitle().equals(marker.getTitle())){
+            if (!marker.getTitle().equals("Localização Atual")) {
                 String stationName = marker.getTitle();
                 Intent intent = new Intent(activity_home.this, activity_bike_list.class);
                 intent.putExtra("STATION_NAME", stationName);
@@ -506,7 +514,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             return false;
         });
     }
-
 
     private void handleSearchQuery(String query) {
         if (gMap == null || currentLocation == null) {
@@ -601,6 +608,30 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                         }
                     }
                 });
+
+    }
+
+
+    private boolean enviarTrajectoria(Trajectory trajectory){
+        apiService.saveTrajectory(trajectory)
+                .enqueue(new Callback<Trajectory>() {
+                    @Override
+                    public void onResponse(Call<Trajectory> call, Response<Trajectory> response) {
+                        if(response.isSuccessful()){
+                            Log.d("API", "Trajetória enviada com sucesso: " + response.body());
+
+                        }else{
+                            Log.d("API", "Código de resposta: " + response.code());
+                            Log.e("API", "Erro no servidor: " + response.code() + ", " + response.errorBody());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Trajectory> call, Throwable t) {
+                        Log.e("API", "Erro ao enviar a trajetória", t);
+                    }
+                });
+        return false;
     }
 
 }

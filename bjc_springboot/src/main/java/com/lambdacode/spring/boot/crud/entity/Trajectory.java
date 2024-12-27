@@ -17,10 +17,28 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Trajectory {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id_trajectory;
+
+    @Column(nullable = false)
+    private int idBike;
+
+    @ManyToOne
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private User user;
+
+    @Column(nullable = false)
+    private double latitudeStart;
+
+    @Column(nullable = false)
+    private double latitudeEnd;
+
+    @Column(nullable = false)
+    private double longitudeStart;
+
+    @Column(nullable = false)
+    private double longitudeEnd;
 
     private String stationStart;
     private String stationEnd;
@@ -31,23 +49,9 @@ public class Trajectory {
     private LocalTime trajectoryTimeStart;
     private LocalTime trajectoryTimeEnd;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 
     @ElementCollection
     @CollectionTable(name = "trajectory_points", joinColumns = @JoinColumn(name = "trajectory_id"))
     private List<Coordenada> intermediatePoints;
 
-    @Override
-    public String toString() {
-        return "Trajectory{" +
-                "stationStart='" + stationStart + '\'' +
-                ", stationEnd='" + stationEnd + '\'' +
-                ", trajectoryDate=" + trajectoryDate +
-                ", trajectoryTimeStart=" + trajectoryTimeStart +
-                ", trajectoryTimeEnd=" + trajectoryTimeEnd +
-                ", user=" + user +
-                '}';
-    }
 }

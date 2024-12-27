@@ -1,21 +1,38 @@
 package com.lambdacode.spring.boot.crud.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "bikes")
 public class Bike {
+
+    public enum Status {
+        DISPONIVEL,
+        RESERVADA,
+        EM_USO,
+        MANUTENCAO
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idBike;
+    private Integer idBike;
 
     @ManyToOne
-    @JoinColumn(name = "idEstacao", nullable = false)
+    @JoinColumn(name = "id_estacao", nullable = false)
+    @JsonBackReference
     private Estacao estacao;
 
-    @OneToOne(optional = true)
-    @JoinColumn(name = "id_usuario", nullable = true)
-    private User user;
+
+    private int idUser;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
+
+    public Bike() {
+    }
+
 
     public Estacao getEstacao() {
         return estacao;
@@ -25,7 +42,29 @@ public class Bike {
         this.estacao = estacao;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public Integer getIdBike() {
+        return idBike;
     }
+
+    public void setIdBike(Integer idBike) {
+        this.idBike = idBike;
+    }
+
+    public Integer getIdUser() {
+        return idUser;
+    }
+
+    public void setIdUser(Integer idUser) {
+        this.idUser = idUser;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+
 }

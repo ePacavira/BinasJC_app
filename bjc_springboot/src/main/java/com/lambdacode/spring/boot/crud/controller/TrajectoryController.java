@@ -16,8 +16,8 @@ public class TrajectoryController {
     private TrajectoryDAO trajectoryDAO;
 
     @PostMapping("/add")
-    public ResponseEntity<String> save(@RequestBody Trajectory trajectory) {
-        trajectoryDAO.save(trajectory);
+    public ResponseEntity<String> saveTrajectory(@RequestBody Trajectory trajectory) {
+        trajectoryDAO.saveTrajectory(trajectory);
         return ResponseEntity.ok("Trajectory added successfully");
     }
     @GetMapping

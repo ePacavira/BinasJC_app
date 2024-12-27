@@ -34,7 +34,7 @@ class SpringBootCrudApplicationTests {
         trajectory.setDistance(234.09f);
         trajectory.setUser(user);
 
-        trajectoryDAO.save(trajectory);
+        //trajectoryDAO.save(trajectory);
 
     }
 

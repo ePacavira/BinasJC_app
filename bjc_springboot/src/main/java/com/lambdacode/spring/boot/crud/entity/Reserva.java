@@ -38,7 +38,7 @@ public class Reserva {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Bicicleta.StatusBicicleta status;
+    private StatusBicicleta status;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime horarioReserva = LocalDateTime.now();

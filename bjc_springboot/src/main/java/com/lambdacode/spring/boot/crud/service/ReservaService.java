@@ -12,6 +12,7 @@ import com.lambdacode.spring.boot.crud.repository.EstacaoRepository;
 import com.lambdacode.spring.boot.crud.repository.ReservaRepository;
 import com.lambdacode.spring.boot.crud.repository.UserRepository;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,13 +46,24 @@ public class ReservaService {
         User user = userRepository.findById(idUsuario)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
+        // Verificar se o usuário já possui uma reserva ativa
+        boolean hasActiveReservation = reservaRepository.existsByUsuario_IdUsuarioAndStatusIn(
+                idUsuario, List.of(Bicicleta.StatusBicicleta.RESERVADA, Bicicleta.StatusBicicleta.EM_USO)
+        );
+
+        if (hasActiveReservation) {
+            response.put("success", false);
+            response.put("message", "Usuário já possui uma reserva ativa.");
+            return response;
+        }
+
         // Verificar se a bicicleta existe
         Bicicleta bicicleta = bicicletaRepository.findById(idBicicleta)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bicicleta não encontrada"));
 
         // Verificar se a bicicleta está disponível na estação
-        if (!bicicleta.getStatus().equals(Bicicleta.StatusBicicleta.DISPONIVEL) ||
-            !bicicleta.getEstacao().getIdEstacao().equals(idEstacao)) {
+        if (!bicicleta.getStatus().equals(Bicicleta.StatusBicicleta.DISPONIVEL)
+                || !bicicleta.getEstacao().getIdEstacao().equals(idEstacao)) {
             response.put("success", false);
             response.put("message", "Bicicleta não disponível ou não encontrada na estação especificada.");
             return response;
@@ -66,7 +78,7 @@ public class ReservaService {
         reserva.setUsuario(user);
         reserva.setBicicleta(bicicleta);
         reserva.setEstacaoRetirada(estacao);
-        reserva.setStatus(StatusBicicleta.RESERVADA);
+        reserva.setStatus(Bicicleta.StatusBicicleta.RESERVADA);
 
         reservaRepository.save(reserva);
 
@@ -79,4 +91,5 @@ public class ReservaService {
         response.put("reserva", reserva);
         return response;
     }
+
 }

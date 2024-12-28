@@ -1,21 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package com.lambdacode.spring.boot.crud.repository;
 
-import com.lambdacode.spring.boot.crud.entity.Bicicleta;
 import com.lambdacode.spring.boot.crud.entity.Reserva;
+import com.lambdacode.spring.boot.crud.entity.Bicicleta.StatusBicicleta;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-/**
- *
- * @author Gate
- */
 @Repository
-public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
-    Optional<Reserva> findByUsuario_IdUsuarioAndStatus(Integer idUsuario, Bicicleta.StatusBicicleta status);
+public interface ReservaRepository extends JpaRepository<Reserva, Long> {
+    Optional<Reserva> findByUsuario_IdUsuarioAndStatus(Integer idUsuario, StatusBicicleta status);
+    boolean existsByUsuario_IdUsuarioAndStatusIn(Integer idUsuario, List<StatusBicicleta> status);
 }
+

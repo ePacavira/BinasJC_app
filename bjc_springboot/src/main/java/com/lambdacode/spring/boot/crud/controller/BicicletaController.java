@@ -4,6 +4,7 @@
  */
 package com.lambdacode.spring.boot.crud.controller;
 
+import com.lambdacode.spring.boot.crud.service.BicicletaService;
 import com.lambdacode.spring.boot.crud.service.ReservaService;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -38,4 +40,18 @@ public class BicicletaController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+    
+    @Autowired
+    private BicicletaService bicicletaService;
+
+    @PostMapping("/levantar")
+    public ResponseEntity<?> levantarBicicleta(@RequestParam Long idReserva, @RequestParam Integer idUsuario) {
+        try {
+            bicicletaService.levantarBicicleta(idReserva, idUsuario);
+            return ResponseEntity.ok("Bicicleta levantada com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+    
 }

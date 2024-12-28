@@ -33,7 +33,7 @@ public class UserController {
         return "success add user";
     }
 
-    @GetMapping
+    @GetMapping("/get")
     public List<User> getUsers() {
         return userService.getUsers();
     }
@@ -48,7 +48,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Retorna 404 se não encontrado
         }
     }
-
 
     @PutMapping("/update/{id}")
     public ResponseEntity<Map<String, Object>> updateUser(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {

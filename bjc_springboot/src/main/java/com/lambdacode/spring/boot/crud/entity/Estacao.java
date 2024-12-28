@@ -1,38 +1,33 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.lambdacode.spring.boot.crud.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+/**
+ *
+ * @author Gate
+ */
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.NoArgsConstructor;
 
 @Data
-@Entity(name = "estacoes")
+@NoArgsConstructor
+@Entity
+@Table(name = "estacoes")
 public class Estacao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idEstacao;
+    private Integer idEstacao;
+
+    @Column(nullable = false, length = 100)
     private String nome;
-    private double latitude;
-    private double longitude;
-    private int totalBike;
 
-    //Relacionamento com Bike
-    @OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
-    private List<Bike> bikes = new ArrayList<>();
+    @Column(nullable = false)
+    private Double latitude;
 
-    public void adicionarBike(Bike bike) {
-        bikes.add(bike);
-        totalBike++;
-    }
+    @Column(nullable = false)
+    private Double longitude;
 
-    public int getTotalBike() {
-        return totalBike;
-    }
-
-    public void setTotalBike(int totalBike) {
-        this.totalBike = totalBike;
-    }
 }

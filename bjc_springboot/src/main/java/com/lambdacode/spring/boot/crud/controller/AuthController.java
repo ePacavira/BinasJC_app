@@ -66,7 +66,7 @@ public class AuthController {
             // Adiciona os campos desejados na resposta
             response.put("success", true);
             response.put("message", "Login efetuado com sucesso");
-            response.put("userId", user.get().getId_usuario()); // ID do usuário autenticado
+            response.put("userId", user.get().getIdUsuario()); // ID do usuário autenticado
             response.put("userNome", user.get().getNome());
             response.put("userPontuacao",user.get().getPontuacao());
 

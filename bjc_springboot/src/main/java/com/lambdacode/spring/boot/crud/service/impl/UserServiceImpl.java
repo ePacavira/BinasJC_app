@@ -1,6 +1,7 @@
 package com.lambdacode.spring.boot.crud.service.impl;
 
 import com.lambdacode.spring.boot.crud.dto.UserDTO;
+import com.lambdacode.spring.boot.crud.entity.Bicicleta;
 import com.lambdacode.spring.boot.crud.entity.User;
 import com.lambdacode.spring.boot.crud.repository.UserRepository;
 import com.lambdacode.spring.boot.crud.service.UserService;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -57,7 +59,7 @@ public class UserServiceImpl implements UserService {
                 .findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid user Id:" + id));
 
-        user.setId_usuario(id);
+        user.setIdUsuario(id);
 
         userRepository.save(user);
 

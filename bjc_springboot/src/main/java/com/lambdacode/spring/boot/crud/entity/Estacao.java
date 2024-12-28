@@ -1,27 +1,33 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package com.lambdacode.spring.boot.crud.entity;
 
+/**
+ *
+ * @author Gate
+ */
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.NoArgsConstructor;
 
 @Data
-@Entity(name = "estacoes")
+@NoArgsConstructor
+@Entity
+@Table(name = "estacoes")
 public class Estacao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idEstacao;
+    private Integer idEstacao;
+
+    @Column(nullable = false, length = 100)
     private String nome;
 
-    private double latitude;
-    private double longitude;
+    @Column(nullable = false)
+    private Double latitude;
 
-    public int getIdEstacao() {
-        return idEstacao;
-    }
+    @Column(nullable = false)
+    private Double longitude;
 
-    //Relacionamento com Bike
-    @OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Bike> bikes = new ArrayList<>();
 }

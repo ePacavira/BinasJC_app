@@ -20,3 +20,4 @@ public interface UserService {
 
     void updateName(Integer id, UserDTO userDTO);
 }
+

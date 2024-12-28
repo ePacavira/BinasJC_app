@@ -11,6 +11,7 @@ import com.lambdacode.spring.boot.crud.repository.BicicletaRepository;
 import com.lambdacode.spring.boot.crud.repository.EstacaoRepository;
 import com.lambdacode.spring.boot.crud.repository.ReservaRepository;
 import com.lambdacode.spring.boot.crud.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,48 @@ public class ReservaService {
 
         response.put("success", true);
         response.put("message", "Bicicleta reservada com sucesso!");
+        response.put("reserva", reserva);
+        return response;
+    }
+
+    public Map<String, Object> devolverBicicleta(Long idReserva, Integer idUsuario, Integer idEstacaoDevolucao) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Encontrar a reserva pelo ID
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva não encontrada"));
+
+        // Verificar se o usuário que está tentando devolver é o mesmo da reserva
+        if (!reserva.getUsuario().getIdUsuario().equals(idUsuario)) {
+            response.put("success", false);
+            response.put("message", "Este usuário não pode devolver essa bicicleta.");
+            return response;
+        }
+
+        // Verificar se a reserva está em uso (garantindo que a bicicleta ainda está sendo usada)
+        if (!reserva.getStatus().equals(StatusBicicleta.EM_USO)) {
+            response.put("success", false);
+            response.put("message", "A bicicleta não está em uso.");
+            return response;
+        }
+
+        // Encontrar a estação de devolução
+        Estacao estacaoDevolucao = estacaoRepository.findById(idEstacaoDevolucao)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Estação de devolução não encontrada"));
+
+        // Atualizar o status da bicicleta para DISPONIVEL
+        Bicicleta bicicleta = reserva.getBicicleta();
+        bicicleta.setStatus(StatusBicicleta.DISPONIVEL);
+        bicicletaRepository.save(bicicleta);
+
+        // Atualizar a reserva com a estação de devolução e data/hora
+        reserva.setEstacaoDevolucao(estacaoDevolucao);
+        reserva.setStatus(StatusBicicleta.DISPONIVEL);
+        reserva.setHorarioDevolucao(LocalDateTime.now());
+        reservaRepository.save(reserva);
+
+        response.put("success", true);
+        response.put("message", "Bicicleta devolvida com sucesso!");
         response.put("reserva", reserva);
         return response;
     }

@@ -6,6 +6,7 @@ package com.lambdacode.spring.boot.crud.controller;
 
 import com.lambdacode.spring.boot.crud.service.BicicletaService;
 import com.lambdacode.spring.boot.crud.service.ReservaService;
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  *
@@ -40,7 +42,7 @@ public class BicicletaController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
-    
+
     @Autowired
     private BicicletaService bicicletaService;
 
@@ -53,5 +55,34 @@ public class BicicletaController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    
+
+    @PostMapping("/devolver")
+    public ResponseEntity<Map<String, Object>> devolverBicicleta(
+            @RequestParam Long idReserva, 
+            @RequestParam Integer idUsuario,
+            @RequestParam Integer idEstacaoDevolucao) {
+        try {
+            // Chamar o serviço para processar a devolução
+            Map<String, Object> response = reservaService.devolverBicicleta(idReserva, idUsuario, idEstacaoDevolucao);
+
+            // Verificar sucesso no retorno do serviço
+            if ((Boolean) response.get("success")) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (ResponseStatusException ex) {
+            // Tratar exceções específicas
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", ex.getReason());
+            return ResponseEntity.status(ex.getStatusCode()).body(errorResponse); // Alteração aqui
+        } catch (Exception ex) {
+            // Tratar outras exceções genéricas
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Erro interno no servidor: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 }

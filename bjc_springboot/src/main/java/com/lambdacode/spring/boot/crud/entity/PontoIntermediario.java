@@ -7,6 +7,7 @@ package com.lambdacode.spring.boot.crud.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
@@ -16,6 +17,7 @@ public class PontoIntermediario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_ponto")
     private Integer idPonto;
 
     @ManyToOne
@@ -23,9 +25,10 @@ public class PontoIntermediario {
     private Trajetoria trajetoria;
 
     @Column(nullable = false, precision = 10, scale = 8)
-    private Double latitude;
+    private BigDecimal latitude;
 
     @Column(nullable = false, precision = 11, scale = 8)
-    private Double longitude;
+    private BigDecimal longitude;
 }
+
 

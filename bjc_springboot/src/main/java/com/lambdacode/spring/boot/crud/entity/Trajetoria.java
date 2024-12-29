@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.lambdacode.spring.boot.crud.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,35 +20,30 @@ public class Trajetoria {
 
     @ManyToOne
     @JoinColumn(name = "id_reserva", nullable = false)
-    private Reserva reserva;
+    private Reserva reserva; // Referência à reserva
 
-    @ManyToOne
-    @JoinColumn(name = "id_bicicleta", nullable = false)
-    private Bicicleta bicicleta;
+    @Column(name = "latitude_inicio", nullable = false, precision = 10, scale = 7)
+    private BigDecimal latitudeInicio;
 
-    @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private User usuario;
+    @Column(name = "longitude_inicio", nullable = false, precision = 10, scale = 7)
+    private BigDecimal longitudeInicio;
 
-    @Column(nullable = false, precision = 10, scale = 8)
-    private Double latitudeInicio;
+    @Column(name = "latitude_fim", precision = 10, scale = 7)
+    private BigDecimal latitudeFim;
 
-    @Column(nullable = false, precision = 11, scale = 8)
-    private Double longitudeInicio;
+    @Column(name = "longitude_fim", precision = 10, scale = 7)
+    private BigDecimal longitudeFim;
 
-    @Column(precision = 10, scale = 8)
-    private Double latitudeFim;
-
-    @Column(precision = 11, scale = 8)
-    private Double longitudeFim;
-
-    @Column(nullable = false)
+    @Column(name = "horario_inicio", nullable = false)
     private LocalDateTime horarioInicio;
 
+    @Column(name = "horario_fim")
     private LocalDateTime horarioFim;
 
-    @ElementCollection
-    @CollectionTable(name = "pontos_intermediarios", joinColumns = @JoinColumn(name = "id_trajetoria"))
-    @Column(name = "ponto_intermediario")
-    private List<String> pontosIntermediarios; // Lista de coordenadas no formato "lat,lon"
+    @PrePersist
+    private void setHorarioInicio() {
+        if (horarioInicio == null) {
+            horarioInicio = reserva.getHorarioReserva(); // Usa o horário da reserva para preencher o horário de início
+        }
+    }
 }

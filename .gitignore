@@ -18,3 +18,11 @@
 .externalNativeBuild
 .cxx
 local.properties
+.idea/deploymentTargetSelector.xml
+app/src/main/java/ao/co/isptec/aplm/binasjc_app/activity_home.java
+base_de_dados/*.sql
+bjc_springboot/src/main/java/com/lambdacode/spring/boot/crud/DAO/*.java
+bjc_springboot/src/main/java/com/lambdacode/spring/boot/crud/controller/*.java
+bjc_springboot/src/main/java/com/lambdacode/spring/boot/crud/entity/*.java
+bjc_springboot/src/main/resources/application.yml
+

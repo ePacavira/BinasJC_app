@@ -6,6 +6,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 import java.util.List;
 import java.util.Map;
@@ -31,17 +32,29 @@ public interface ApiService {
     Call<AuthResponse> updatePassword(@Path("id") int userId, @Body PasswordPayload passwordPayload);
 
     @POST("/trajectories/add")
-    Call<Trajectory> saveTrajectory(@Body Trajectory trajectorie);
+    Call<Trajectoria> saveTrajectory(@Body Trajectoria trajectorie);
 
     @GET("/estacoes")
     Call<List<Estacao>>getAllEstacoes();
-
     @GET
-    Call<List<Bike>>getBikes();
+    Call<List<Bicicleta>>getAllBicicletas();
 
-    @GET("/user/{userId}")
-    Call<Reserva>findReservaByUserId(@Path("id") int userId);
+    @POST("/bicicletas/levantar")
+    Call<String> levantarBicicleta(
+            @Query("idReserva") Long idReserva,
+            @Query("idUsuario") Integer idUsuario
+    );
+    @POST("/bicicleta/devolver")
+    Call<Map<String,Object>>devolverBicicleta(
+            @Query ("idReserva") Long idReserva,
+            @Query ("Integer") Integer idUsuario,
+            @Query ("Integer") Integer idEstacaoDevolucao
+    );
 
+    @GET("/bicicletas/reservas")
+    Call<List<Reserva>>getAllReservas();
 
+    @POST("/pontoIntermediario")
+    Call<PontoIntermediario>createOrUpdatePontoIntermediario(@Body PontoIntermediario pontoIntermediário);
 
 }

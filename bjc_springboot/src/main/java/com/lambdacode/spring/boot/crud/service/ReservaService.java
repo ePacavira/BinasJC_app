@@ -135,4 +135,9 @@ public class ReservaService {
         return response;
     }
 
+    //Devolver todas as reservas
+    public List<Reserva> getAllReservas() {
+        return reservaRepository.findAll();
+    }
+
 }

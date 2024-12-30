@@ -9,9 +9,9 @@ public class User {
         private String email;
         private String palavra_passe;
         private int pontuacao;
-        private List<Trajectory> trajectories = new ArrayList<>();
+        private List<Trajectoria> trajectories = new ArrayList<>();
 
-        public void addTrajectory(Trajectory trajectory) {
+        public void addTrajectory(Trajectoria trajectory) {
             this.trajectories.add(trajectory);
         }
         // Getters e setters

@@ -1,17 +1,18 @@
 package ao.co.isptec.aplm.binasjc_app;
 
- enum Status{
+ enum StatusBicicleta{
      DISPONIVEL,
      RESERVADA,
      EM_USO,
      MANUTENCAO;
 }
-public class Bike {
+
+public class Bicicleta {
 
     private int idBicicleta;
     private Estacao estacao;
     private int idUser;
-    private Status status;
+    private StatusBicicleta status;
 
 
 
@@ -39,11 +40,11 @@ public class Bike {
         this.idUser = idUser;
     }
 
-    public Status getStatus() {
+    public StatusBicicleta getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void StatusBicicleta(StatusBicicleta status) {
         this.status = status;
     }
 }

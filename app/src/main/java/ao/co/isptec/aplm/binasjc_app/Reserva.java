@@ -1,75 +1,64 @@
 package ao.co.isptec.aplm.binasjc_app;
 
-enum StatusReserva {
-    EMCURSO,
-    CANCELADA,
-    FINALIZADA;
-}
-
 public class Reserva {
-    private int idReserva;
-    private int idUser;
-    private int idBike;
-    private StatusReserva status;
+    private Long idReserva;
 
-    private int idEstacaoRetirada;
+    private User usuario;
 
-    private int idEstacaoDevolvida;
 
-    public Reserva() {
-    }
+    private Bicicleta bicicleta;
 
-    public Reserva(int idUser, int idBike, int idEstacaoRetirada) {
-        this.idUser = idUser;
-        this.idBike = idBike;
-        this.idEstacaoRetirada = idEstacaoRetirada;
-    }
+    private Estacao estacaoRetirada;
 
-    public int getIdReserva() {
+   private Estacao estacaoDevolucao;
+
+    private StatusBicicleta status;
+
+    public Long getIdReserva() {
         return idReserva;
     }
 
-    public void setIdReserva(int idReserva) {
+    public void setIdReserva(Long idReserva) {
         this.idReserva = idReserva;
     }
 
-    public int getIdUser() {
-        return idUser;
+    public User getUsuario() {
+        return usuario;
     }
 
-    public void setIdUser(int idUser) {
-        this.idUser = idUser;
+    public void setUsuario(User usuario) {
+        this.usuario = usuario;
     }
 
-    public int getIdBike() {
-        return idBike;
+    public Bicicleta getBicicleta() {
+        return bicicleta;
     }
 
-    public void setIdBike(int idBike) {
-        this.idBike = idBike;
+    public void setBicicleta(Bicicleta bicicleta) {
+        this.bicicleta = bicicleta;
     }
 
-    public int getIdEstacaoRetirada() {
-        return idEstacaoRetirada;
+    public Estacao getEstacaoRetirada() {
+        return estacaoRetirada;
     }
 
-    public void setIdEstacaoRetirada(int idEstacaoRetirada) {
-        this.idEstacaoRetirada = idEstacaoRetirada;
+    public void setEstacaoRetirada(Estacao estacaoRetirada) {
+        this.estacaoRetirada = estacaoRetirada;
     }
 
-    public int getIdEstacaoDevolvida() {
-        return idEstacaoDevolvida;
+    public Estacao getEstacaoDevolucao() {
+        return estacaoDevolucao;
     }
 
-    public void setIdEstacaoDevolvida(int idEstacaoDevolvida) {
-        this.idEstacaoDevolvida = idEstacaoDevolvida;
+    public void setEstacaoDevolucao(Estacao estacaoDevolucao) {
+        this.estacaoDevolucao = estacaoDevolucao;
     }
 
-    public StatusReserva getStatus() {
+    public StatusBicicleta getStatus() {
         return status;
     }
 
-    public void setStatus(StatusReserva status) {
+    public void setStatus(StatusBicicleta status) {
         this.status = status;
     }
 }

@@ -10,6 +10,8 @@ import com.lambdacode.spring.boot.crud.entity.Reserva;
 import com.lambdacode.spring.boot.crud.repository.BicicletaRepository;
 import com.lambdacode.spring.boot.crud.repository.ReservaRepository;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -52,6 +54,14 @@ public class BicicletaService {
 
         reservaRepository.save(reserva);
         bicicletaRepository.save(bicicleta);
+    }
+
+    public List<Bicicleta> getAllBicicletas() {
+        return bicicletaRepository.findAll();
+    }
+
+    public Bicicleta salvarBicicleta(Bicicleta bicicleta) {
+        return bicicletaRepository.save(bicicleta);
     }
 
 }

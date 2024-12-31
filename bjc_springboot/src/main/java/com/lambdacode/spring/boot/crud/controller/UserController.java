@@ -23,6 +23,9 @@ public class UserController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
+   /* @Autowired
+    private UserDAO userDAO;*/
+
     @PostMapping("/add")
     public String addUser(@RequestBody User user) {
         userService.addUser(user);
@@ -163,4 +166,5 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
 }

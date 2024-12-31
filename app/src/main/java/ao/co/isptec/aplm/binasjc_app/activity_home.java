@@ -32,12 +32,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import android.util.Log;
 
-import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -57,15 +52,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.tasks.Task;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -74,7 +68,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class activity_home extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -90,12 +83,18 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
     private SearchView mapSearchView;
     private HashMap<String,LatLng>predefinedLocations; //conjunto de Localizações que corresponderão as localizações das estações
     private Marker currentMarket;
-    private ArrayList<Trajectory> allTrajectories = new ArrayList<>();
+    private ArrayList<Trajectoria> allTrajectories = new ArrayList<>();
     private LocationCallback locationCallback;
     private User user = new User();
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private Trajectory currentTrajectory;
     private int totalPoints = 0;
+    List<LatLng> pontosIntermediarios = new ArrayList<>();
+
+
+    // Obter instância de Retrofit
+    private Retrofit retrofit = RetrofitClient.getRetrofitInstance();
+    // Criar a interface do serviço da API
+    private ApiService apiService = retrofit.create(ApiService.class);
 
 
     private LocationRequest locationRequest = new LocationRequest.Builder(
@@ -116,11 +115,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         int userId = sharedPreferences.getInt("USER_ID", -1);
         int userPoints = sharedPreferences.getInt("USER_POINTS", 0); // Valor padrão: 0
 
-        // Obter instância de Retrofit
-        Retrofit retrofit = RetrofitClient.getRetrofitInstance();
-
-        // Criar a interface do serviço da API
-        ApiService apiService = retrofit.create(ApiService.class);
 
         // Fazer a chamada à API
         Call<User> call = apiService.getUserById(userId);
@@ -155,19 +149,34 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         ImageView searchIcon = mapSearchView.findViewById(searchIconId);
         searchIcon.setColorFilter(getResources().getColor(R.color.white), PorterDuff.Mode.SRC_IN); // Define a cor do ícone
 
-        predefinedLocations = new HashMap<>();
-        // Adiciona Estações predefinidas
-        predefinedLocations.put("EstacaoProxima1", new LatLng(-8.8370, 13.2885)); // < 150 metros
-        predefinedLocations.put("EstacaoProxima2", new LatLng(-8.8355, 13.2890)); // < 150 metros
-        predefinedLocations.put("EstacaoProxima3", new LatLng(-8.8365, 13.2880)); // < 150 metros
-
-        predefinedLocations.put("EstacaoDistante1", new LatLng(-8.8600, 13.3100)); // > 150 metros
-        predefinedLocations.put("EstacaoDistante2", new LatLng(-8.8000, 13.3300)); // > 150 metros
-
-
+        //PEGAR AS ESTAÇÕES
         // Inicializa FusedLocationProviderClient
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity_home.this);
         getLastLocation();
+        predefinedLocations = new HashMap<>();
+        apiService.getAllEstacoes().enqueue(new Callback<List<Estacao>>() {
+            @Override
+            public void onResponse(Call<List<Estacao>> call, Response<List<Estacao>> response) {
+                if (response.isSuccessful()){
+                    //obter a lista de estacoes
+                    List<Estacao> estacoes = response.body();
+                    Log.d("EstacaoDebug", "Número de estações recebidas: " + estacoes.size());
+                    for (Estacao estacao : estacoes) {
+                        // Adiciona Estações predefinidas
+                        predefinedLocations.put(estacao.getNome(), new LatLng((estacao.getLatitude()), estacao.getLongitude()));
+                        Log.d("EstacaoDebug", "ID: " + estacao.getIdEstacao() + ", Nome: " + estacao.getNome() + " Latitude: " + estacao.getLatitude() + " Longitude: " + estacao.getLongitude());
+                    }
+                    Log.d("EstacaoDebug", "Tamanho final do predefinedLocations: " + predefinedLocations.size());
+                }else{
+                    Log.e("Erro", "Falha ao obter estações: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Estacao>> call, Throwable t) {
+                Log.e("Erro", "Erro na chamada à API: " + t.getMessage());
+            }
+        });
 
         // Configurar o mapa
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.id_map);
@@ -176,102 +185,152 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         }
 
 
-        locationCallback = new LocationCallback() {
-            @SuppressLint("NewApi")
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult != null) {
-                    Location location = locationResult.getLastLocation();
-                    if (location != null) {
-                        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+      locationCallback = new LocationCallback() {
+          private Trajectoria currentTrajectory = new Trajectoria();
+          private User currentUser = null;          @Override
+          public void onLocationResult(@NonNull LocationResult locationResult) {
+              if(locationResult != null){
+                  Location location = locationResult.getLastLocation();
+                  if(location != null){
+                      LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                      //obter o usuario
+                      if(currentUser == null){
+                          Log.d("API", "User obtido com sucesso***: " + userId);
+                          obterUtilizador(userId, new UserCallback() {
+                              @Override
+                              public void onUserReceived(User user) {
+                                  currentUser = user;
+                                  Log.d("API", "User obtido com sucesso: " + user.getId());
 
-                        // Inicia a trajetória, se necessário
-                        if (currentTrajectory == null) {
-                            currentTrajectory = new Trajectory("EstacaoInicial", "EstacaoFinal");
-                            Log.d("Trajectory", "Trajetória iniciada em: " + currentLatLng);
-                        }
+                              }
+                              @Override
+                              public void onError(Throwable t) {
+                                  Log.e("API", "Error ao obter o user: " + t.getMessage());
+                                  processarLocalizacao(location, currentLatLng);
+                              }
+                          });
+                      }else{
+                          Log.d("API", "User já inicializado: " + currentUser.getId());
+                          processarLocalizacao(location, currentLatLng);
+                      }
 
-                        // Adiciona o ponto atual à trajetória
-                        Log.d("Trajectory", "Ponto adicionado: " + currentLatLng);
+                  }
 
-                        // Verifica se o usuário chegou a uma estação
-                        for (String stationName : predefinedLocations.keySet()) {
-                            LatLng stationLatLng = predefinedLocations.get(stationName);
-                            float[] results = new float[1];
-                            Location.distanceBetween(
-                                    location.getLatitude(), location.getLongitude(),
-                                    stationLatLng.latitude, stationLatLng.longitude,
-                                    results
-                            );
+              }
+          }
 
-                            // Verifica se está dentro do raio da estação
-                            if (results[0] <= 20) {
-                                //verificar a logica de Levantamento e devolução da Bicicleta
-                                /*Armazenamento  do ponto actual na estrutura*/
-                                allTrajectories.add(currentTrajectory);
+          private void processarLocalizacao(Location location, LatLng currentLatLng) {
+              for (int i = 1; i < pontosIntermediarios.size(); i++) {
+                  LatLng pontoAnterior = pontosIntermediarios.get(i - 1);
+                  float[] results = new float[1];
+                  Location.distanceBetween(
+                          pontoAnterior.latitude, pontoAnterior.longitude,
+                          currentLatLng.latitude, currentLatLng.longitude,
+                          results
+                  );
 
-                                //Mandar ao servidor
-                                //Enviar no Servidor simplemente quando a bicicleta for devolvida!
-                                Log.d("Trajectory","Enviando trajectoria o Servidor");
-
-                                RetrofitClient retrofitService = new RetrofitClient();
-                                ApiService trajectoriApi = retrofitService.getRetrofit().create(ApiService.class);
-
-                                trajectoriApi.save(currentTrajectory).enqueue(new Callback<Trajectory>() {
-                                    @Override
-                                    public void onResponse(Call<Trajectory> call, Response<Trajectory> response) {
-                                        if (response.isSuccessful()) {
-                                            Log.d("API", "Trajetória enviada com sucesso: " + response.body());
-                                        } else {
-                                            Log.d("API", "Código de resposta: " + response.code());
-                                            Log.e("API", "Erro no servidor: " + response.code() + ", " + response.errorBody());
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<Trajectory> call, Throwable t) {
-                                        Log.e("API", "Erro ao enviar a trajetória", t);
-                                    }
-                                });
+                  float distancia = results[0];
+                  Log.d("API", "Distance calculada: " + distancia + " meteros");
 
 
-                                /*reinicia o rastreamento*/
-                                currentTrajectory = null;
-                                Toast.makeText(activity_home.this, "Você chegou na estação: " + stationName, Toast.LENGTH_SHORT).show();
-                                break;
-                            }
-                        }
+                  /*if (distancia > 150) {
+                      pontosIntermediarios.add(currentLatLng);
+                      PontoIntermediario ponto = new PontoIntermediario(currentLatLng.latitude, currentLatLng.longitude);
+                      enviarPontoIntermediario(ponto);
+                  }
 
-                       /* List<LatLng> points = currentTrajectory.getIntermediatePoints();
-                        for (int i = 1; i < points.size(); i++) {
-                            float[] results = new float[1];
-                            LatLng currentPoint = points.get(i);
-                            LatLng previousPoint = points.get(i - 1);
+                   //Agora podemos usar currentUser com segurança
+                  if (distancia >= 300 && currentUser != null) {
+                      int pontos = currentUser.getPontuacao() + 1;
+                      currentUser.setPontuacao(pontos);
+                      // Atualizar usuário na API
 
-                            Location.distanceBetween(
-                                    previousPoint.latitude, previousPoint.longitude,
-                                    currentPoint.latitude, currentPoint.longitude,
-                                    results
-                            );
+                  }*/
+              }
 
-                            if (results[0] >= 10) {
-                                totalPoints++;
-                                user.setPontuacao(totalPoints);
-                                Log.d("MyPoint","Pontuação actual: " + totalPoints);
-                            }
-                        }*/
-                        pontuacao += totalPoints;
-                        Log.d("LocationUpdate", "Lat: " + location.getLatitude() + ", Lng: " + location.getLongitude());
-                    }
-                }
-                //showAllPoint();
-            }
-
-
-        };
+              //verificar estações
+              for (String stationName : predefinedLocations.keySet()) {
+                  LatLng stationLatLng = predefinedLocations.get(stationName);
+                  float[] results = new float[1];
+                  Location.distanceBetween(
+                          location.getLatitude(), location.getLongitude(),
+                          stationLatLng.latitude, stationLatLng.longitude,
+                          results
+                  );
+                  if (results[0] <= 20 && currentUser != null) {
+                      Log.d("API", "verificando o conjunto de resevas " + currentUser.getId());
+                      verificarReservas(currentUser, location);
+                      break;
+                  }
+              }
 
 
+          }
+
+          private void verificarReservas(User user, Location location) {
+              apiService.getAllReservas().enqueue(new Callback<List<Reserva>>() {
+                  @Override
+                  public void onResponse(Call<List<Reserva>> call, Response<List<Reserva>> response) {
+                      if (response.isSuccessful() && response.body() != null) {
+                          List<Reserva> reservas = response.body();
+                          Log.d("API", "Reservas recebidas: " + reservas.size() + " para o usuário: " + user.getId());
+                          for (Reserva reserva : reservas) {
+                              if (user.getId().equals(reserva.getUsuario().getId())) {
+                                  Log.d("API", "Reserva encontrada para o usuário: " + user.getId());
+                                  processarReserva(reserva, location, user);
+                              }else{
+                                  Log.e("API", "Resposta falhou: " + response.errorBody());
+                              }
+                          }
+                      }
+                  }
+
+                  @Override
+                  public void onFailure(Call<List<Reserva>> call, Throwable t) {
+                      Log.e("API", "Erro na chamada: " + t.getMessage());
+                  }
+              });
+          }
+
+          private void processarReserva(Reserva reserva, Location location, User user) {
+              Bicicleta bicicleta = reserva.getBicicleta();
+              StatusBicicleta statusBackend = StatusBicicleta.fromString(bicicleta.getStatus().toString());
+
+              Log.d("API", "Status da bicicleta: " + statusBackend);
+
+              if (statusBackend == StatusBicicleta.RESERVADA) {
+                  Log.d("API", "Bicicleta reservada encontrada: " + bicicleta.getIdBicicleta());
+                  levantarBicicleta(reserva.getIdReserva(), user.getId());
+                  inicializarTrajectoria(bicicleta, user, location);
+              } else if (statusBackend == StatusBicicleta.EM_USO) {
+                  Log.d("API", "Bicicleta em uso encontrada: " + bicicleta.getIdBicicleta());
+                  devolverBicicleta(reserva.getIdReserva(), user.getId(), reserva.getEstacaoDevolucao().getIdEstacao());
+                  finalizarTrajectoria(location);
+              }
+          }
+
+          private void inicializarTrajectoria(Bicicleta bicicleta, User user, Location location) {
+              currentTrajectory.setIdBike(bicicleta.getIdBicicleta());
+              currentTrajectory.setUser(user);
+              currentTrajectory.setLatitudeInicio(location.getLatitude());
+              currentTrajectory.setLongitudeInicio(location.getLongitude());
+              Log.d("API", "Trajectoria Inicializada para a bicicleta: " + bicicleta.getIdBicicleta());
+
+          }
+
+          private void finalizarTrajectoria(Location location) {
+              currentTrajectory.setLatitudeFim(location.getLatitude());
+              currentTrajectory.setLongitudeFim(location.getLongitude());
+              enviarTrajectoria(currentTrajectory);
+              Log.d("API", "Trajectoria finalizada com sucesso para a bicicleta: " + currentTrajectory.getIdBike());
+              currentTrajectory = null;
+          }
+      };
+
+
+        showAllPoint();
         setupLocationUpdates();
+
 
         dialog = new Dialog(activity_home.this);
         dialog.setContentView(R.layout.activity_dialog_share);
@@ -385,36 +444,22 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             executorService.shutdown();
         }
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getLastLocation();
+    }
 
-    /*private void showAllPoint(){
-        for(Trajectory trajectory : allTrajectories){
+    private void showAllPoint(){
+        for(Trajectoria trajectory : allTrajectories){
             if(trajectory != null){
-                Log.e("TrajectoryPoints", trajectory.getEndLocation().toString());
+                Log.e("currentLocation","Latitude: " + currentLocation.getLatitude()
+                        +"Longitude: " + currentLocation.getLongitude()
+                );
             }else{
-                Log.e("TrajectoryPoints", "Location is null");
+                Log.e("currentLocation", "Location is null");
 
             }
-        }
-    }*/
-
-    private void getLastLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationProviderClient.getLastLocation()
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            if (location != null) {
-                                currentLocation = location;
-                                LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-                                currentMarket = gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Actual"));
-                                gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
-                            } else {
-                                Toast.makeText(activity_home.this, "Localização não disponível", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
         }
     }
 
@@ -426,38 +471,76 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Actual"));
             gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
             getLastLocation();
+            initializeMapWithStations();
         } else {
             Toast.makeText(activity_home.this, "Localização não disponível", Toast.LENGTH_SHORT).show();
         }
+    }
+    private void getLastLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(this, location -> {
+                        if (location != null) {
+                            Log.d("LocationDebug", "Localização obtida com sucesso: " +
+                                    "\nLatitude: " + location.getLatitude() +
+                                    "\nLongitude: " + location.getLongitude() +
+                                    "\nPrecisão: " + location.getAccuracy() +
+                                    "\nTempo: " + new Date(location.getTime()).toString());
+                            currentLocation = location;
+                            LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                            currentMarket = gMap.addMarker(new MarkerOptions().position(currentLatLng).title("Localização Atual"));
+                            gMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12.0f));
+                            initializeMapWithStations();
+                        } else {
+                            Log.e("LocationDebug", "Localização obtida é nula.");
+                            Toast.makeText(activity_home.this, "Localização não disponível", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e("LocationDebug", "Erro ao obter localização: " + e.getMessage()));
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, FINE_PERMISSION_CODE);
+        }
+    }
 
-        gMap.setOnMapLoadedCallback(() -> {
+    private void initializeMapWithStations() {
+        Log.d("MapDebug", "initializeMapWithStations - Map: " + (gMap != null) +
+                ", Location: " + (currentLocation != null) +
+                ", Stations: " + (!predefinedLocations.isEmpty()));
+
+        if (gMap != null && currentLocation != null && !predefinedLocations.isEmpty()) {
             showAllStations();
-            Log.e("Verificar estações proximas", "FUNÇÃO showAllStations CHAMADA!!!!!!!!");
-        });
-
+        }
     }
 
     private void showAllStations() {
         if (gMap == null) {
+            Log.d("ShowStations", "Mapa nulo");
             return;
         }
+
+        gMap.clear();
 
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         boolean hasMarkers = false;
         float[] results = new float[1];
 
-        // Certifique-se de que currentLocation não é nulo
-        if (currentLocation != null) {
+        // Adiciona o marcador da localização atual
+        LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        currentMarket = gMap.addMarker(new MarkerOptions()
+                .position(currentLatLng)
+                .title("Localização Atual"));
+        builder.include(currentLatLng);
+
+        if (!predefinedLocations.isEmpty()) {
             for (String stationName : predefinedLocations.keySet()) {
                 LatLng location = predefinedLocations.get(stationName);
 
-                // Obter a distância entre a localização atual e as estações
                 Location.distanceBetween(
                         currentLocation.getLatitude(), currentLocation.getLongitude(),
                         location.latitude, location.longitude, results
                 );
 
-                if (results[0] < 150) { // Comparando a distância real
+                if (results[0] < 2000) {
                     gMap.addMarker(new MarkerOptions()
                             .position(location)
                             .title(stationName)
@@ -466,8 +549,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                     hasMarkers = true;
                 }
             }
-        } else {
-            Log.e("ShowStations", "Localização atual é nula, não é possível calcular distâncias.");
         }
 
         if (hasMarkers) {
@@ -477,13 +558,10 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             } catch (IllegalStateException e) {
                 Log.e("ShowStations", "Erro ao ajustar limites do mapa", e);
             }
-        } else {
-            Log.e("ShowStations", "Nenhum marcador adicionado para ajustar limites.");
         }
 
-        // Adicionando o listener para clique nos marcadores
         gMap.setOnMarkerClickListener(marker -> {
-            if(!currentMarket.getTitle().equals(marker.getTitle())){
+            if (!marker.getTitle().equals("Localização Atual")) {
                 String stationName = marker.getTitle();
                 Intent intent = new Intent(activity_home.this, activity_bike_list.class);
                 intent.putExtra("STATION_NAME", stationName);
@@ -492,7 +570,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             return false;
         });
     }
-
 
     private void handleSearchQuery(String query) {
         if (gMap == null || currentLocation == null) {
@@ -587,6 +664,108 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                         }
                     }
                 });
+
+    }
+
+    private boolean enviarTrajectoria(Trajectoria trajectory){
+        apiService.saveTrajectory(trajectory)
+                .enqueue(new Callback<Trajectoria>() {
+                    @Override
+                    public void onResponse(Call<Trajectoria> call, Response<Trajectoria> response) {
+                        if(response.isSuccessful()){
+                            Log.d("API", "Trajetória enviada com sucesso: " + response.body());
+
+                        }else{
+                            Log.d("API", "Código de resposta: " + response.code());
+                            Log.e("API", "Erro no servidor: " + response.code() + ", " + response.errorBody());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Trajectoria> call, Throwable t) {
+                        Log.e("API", "Erro ao enviar a trajetória", t);
+                    }
+                });
+        return false;
+    }
+
+
+    private  void levantarBicicleta(Long idReserva, Integer idUsuario) {
+        /*final boolean[] retorno = {false};*/
+        apiService.levantarBicicleta(idReserva, idUsuario).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful()) {
+                    Log.d("API","Bicicleta Levantada com Sucesso");
+                    Toast.makeText(activity_home.this,"Bicicleta Levantada",Toast.LENGTH_SHORT).show();
+
+                } else {
+                    Log.d("API","Erro ao levantar bicicleta: " + response.code());
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.e("API_Levantas","Falha na chamada da API: " + t.getMessage());
+            }
+        });
+    }
+
+    private  void devolverBicicleta (Long idReserva, Integer idUsuario, Integer idEstacaoDevolucao){
+       /* final boolean[] retorno = {false};*/
+        apiService.devolverBicicleta(idReserva,idUsuario,idEstacaoDevolucao).enqueue(new Callback<Map<String, Object>>() {
+            @Override
+            public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                if(response.isSuccessful()){
+                    Log.d("API_devolver","Bicicleta Devolvida com Sucesso");
+                    Toast.makeText(activity_home.this,"Bicicleta Devolvida",Toast.LENGTH_SHORT).show();
+                }else{
+                    Log.d("API_devolver","Erro ao devolver a bicicleta: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                Log.e("API_Devolver", "ERRO EM SE COMUNICAR COM A API : "+ t.getMessage());
+            }
+        });
+
+    }
+
+    private void enviarPontoIntermediario(PontoIntermediario pontoIntermediario){
+        apiService.createOrUpdatePontoIntermediario(pontoIntermediario)
+                .enqueue(new Callback<PontoIntermediario>() {
+                    @Override
+                    public void onResponse(Call<PontoIntermediario> call, Response<PontoIntermediario> response) {
+                        if(response.isSuccessful()){
+                            Log.d("Ponto","Ponto Enviado com sucesso! ");
+                        }else{
+                            Log.e("Ponto", "Erro ao enviar Ponto Intermediario : " + response.code());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<PontoIntermediario> call, Throwable t) {
+
+                    }
+                });
+    }
+
+    private void obterUtilizador(int userId, UserCallback callback) {
+        Call<User> call = apiService.getUserById(userId);
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onUserReceived(response.body());
+                }
+            }
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                callback.onError(t);
+            }
+        });
     }
 
 }

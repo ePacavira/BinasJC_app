@@ -4,18 +4,16 @@
  */
 package com.lambdacode.spring.boot.crud.controller;
 
+import com.lambdacode.spring.boot.crud.entity.Bicicleta;
 import com.lambdacode.spring.boot.crud.service.BicicletaService;
 import com.lambdacode.spring.boot.crud.service.ReservaService;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -85,4 +83,21 @@ public class BicicletaController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+
+    /**
+     * Endpoint para obter todas as bicicletas.
+     */
+    @GetMapping
+    public ResponseEntity<List<Bicicleta>> getAllBicicletas() {
+        List<Bicicleta> bicicletas = bicicletaService.getAllBicicletas();
+        return ResponseEntity.ok(bicicletas);
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<Bicicleta>save(@RequestBody Bicicleta bicicleta) {
+        bicicletaService.salvarBicicleta(bicicleta);
+        return ResponseEntity.ok(bicicleta);
+    }
+
+
 }

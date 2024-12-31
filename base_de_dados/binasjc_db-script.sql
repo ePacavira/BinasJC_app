@@ -72,7 +72,7 @@ INSERT INTO Estacoes (nome, latitude, longitude) VALUES
 
 -- Inserindo Bicicletas
 INSERT INTO Bicicletas (id_estacao, status) VALUES
-(1, 'disponivel'),
+(1, 'DISPONIVEL'),
 (2, 'em_uso'),
 (3, 'manutencao'),
 (1, 'reservada'),

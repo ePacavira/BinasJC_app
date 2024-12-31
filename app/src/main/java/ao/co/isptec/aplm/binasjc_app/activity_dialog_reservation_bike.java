@@ -42,7 +42,6 @@ public class activity_dialog_reservation_bike extends AppCompatActivity {
 
         bike_name = findViewById(R.id.bikeName);
         station_name = findViewById(R.id.stationName);
-        dateRestore = findViewById(R.id.idRestore);
         restore = findViewById(R.id.btnDialogReservar);
         cancelar = findViewById(R.id.btnDialogCancel);
 

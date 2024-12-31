@@ -31,7 +31,7 @@ public class TrajetoriaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/add")
     public Trajetoria createTrajetoria(@RequestBody Trajetoria trajetoria) {
         return trajetoriaService.save(trajetoria);
     }

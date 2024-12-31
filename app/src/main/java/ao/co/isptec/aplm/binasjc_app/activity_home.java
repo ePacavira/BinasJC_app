@@ -184,119 +184,153 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             mapFragment.getMapAsync(this);
         }
 
-        locationCallback = new LocationCallback() {
-            private Trajectoria currentTrajectory = new Trajectoria();
 
-            @SuppressLint("NewApi")
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                if (locationResult != null) {
-                    Location location = locationResult.getLastLocation();
-                    if (location != null) {
-                        LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+      locationCallback = new LocationCallback() {
+          private Trajectoria currentTrajectory = new Trajectoria();
+          private User currentUser = null;          @Override
+          public void onLocationResult(@NonNull LocationResult locationResult) {
+              if(locationResult != null){
+                  Location location = locationResult.getLastLocation();
+                  if(location != null){
+                      LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                      //obter o usuario
+                      if(currentUser == null){
+                          Log.d("API", "User obtido com sucesso***: " + userId);
+                          obterUtilizador(userId, new UserCallback() {
+                              @Override
+                              public void onUserReceived(User user) {
+                                  currentUser = user;
+                                  Log.d("API", "User obtido com sucesso: " + user.getId());
 
-                        for (int i = 1; i < pontosIntermediarios.size(); i++) {
-                            LatLng pontoAnterior = pontosIntermediarios.get(i - 1); // Obter o ponto anterior
-                            LatLng pontoAtual = currentLatLng; // Ponto atual
+                              }
+                              @Override
+                              public void onError(Throwable t) {
+                                  Log.e("API", "Error ao obter o user: " + t.getMessage());
+                                  processarLocalizacao(location, currentLatLng);
+                              }
+                          });
+                      }else{
+                          Log.d("API", "User já inicializado: " + currentUser.getId());
+                          processarLocalizacao(location, currentLatLng);
+                      }
 
-                            float[] results = new float[1];
-                            Location.distanceBetween(
-                                    pontoAnterior.latitude, pontoAnterior.longitude,
-                                    pontoAtual.latitude, pontoAtual.longitude,
-                                    results
-                            );
+                  }
 
-                            float distancia = results[0]; // Distância calculada em metros
+              }
+          }
 
-                            if (distancia > 150) { // Se a distância for maior que 150 metros
-                                pontosIntermediarios.add(currentLatLng);
-                                // Enviar o ponto intermediário para a API
-                                PontoIntermediario ponto = new PontoIntermediario(currentLatLng.latitude, currentLatLng.longitude);
-                                enviarPontoIntermediario(ponto);
-                            }
+          private void processarLocalizacao(Location location, LatLng currentLatLng) {
+              for (int i = 1; i < pontosIntermediarios.size(); i++) {
+                  LatLng pontoAnterior = pontosIntermediarios.get(i - 1);
+                  float[] results = new float[1];
+                  Location.distanceBetween(
+                          pontoAnterior.latitude, pontoAnterior.longitude,
+                          currentLatLng.latitude, currentLatLng.longitude,
+                          results
+                  );
 
-                            //incrementar a pontuação do utilizador
-                            if(distancia >= 300){
-                                int pontos = user.getPontuacao() + 1;
-                                user.setPontuacao(pontos);
-                                //chamar updateUser
-                            }
-                        }
+                  float distancia = results[0];
+                  Log.d("API", "Distance calculada: " + distancia + " meteros");
 
 
-                        // Verifica se o usuário chegou a uma estação
-                        for (String stationName : predefinedLocations.keySet()) {
-                            LatLng stationLatLng = predefinedLocations.get(stationName);
-                            float[] results = new float[1];
-                            Location.distanceBetween(
-                                    location.getLatitude(), location.getLongitude(),
-                                    stationLatLng.latitude, stationLatLng.longitude,
-                                    results
-                            );
+                  /*if (distancia > 150) {
+                      pontosIntermediarios.add(currentLatLng);
+                      PontoIntermediario ponto = new PontoIntermediario(currentLatLng.latitude, currentLatLng.longitude);
+                      enviarPontoIntermediario(ponto);
+                  }
 
-                            // Verifica se está dentro do raio da estação
-                            if (results[0] <= 20) {
-                                //o rastreo da localização do dispositivo começa aqui
-                                //devo verificar se o utilizador possui uma reserva
+                   //Agora podemos usar currentUser com segurança
+                  if (distancia >= 300 && currentUser != null) {
+                      int pontos = currentUser.getPontuacao() + 1;
+                      currentUser.setPontuacao(pontos);
+                      // Atualizar usuário na API
 
-                                apiService.getAllReservas().enqueue(new Callback<List<Reserva>>() {
-                                    @Override
-                                    public void onResponse(Call<List<Reserva>> call, Response<List<Reserva>> response) {
-                                        if (response.isSuccessful() && response.body() != null) {
-                                            List<Reserva> reservas = response.body();
+                  }*/
+              }
 
-                                            //Procurar pelo usuario logado
-                                            for(Reserva reserva : reservas){
-                                                User utilizador = reserva.getUsuario();
+              //verificar estações
+              for (String stationName : predefinedLocations.keySet()) {
+                  LatLng stationLatLng = predefinedLocations.get(stationName);
+                  float[] results = new float[1];
+                  Location.distanceBetween(
+                          location.getLatitude(), location.getLongitude(),
+                          stationLatLng.latitude, stationLatLng.longitude,
+                          results
+                  );
+                  if (results[0] <= 20 && currentUser != null) {
+                      Log.d("API", "verificando o conjunto de resevas " + currentUser.getId());
+                      verificarReservas(currentUser, location);
+                      break;
+                  }
+              }
 
-                                                if(utilizador.getId() == user.getId()){
-                                                    //Existe um vinculo entre o utilizador e a biciclet
-                                                    // aVerificar o estado da Bicicleta
-                                                    Bicicleta bicicleta = reserva.getBicicleta();
-                                                    //Verificar o estado da bicicleta
-                                                    if(bicicleta.getStatus().equals("RESERVADA")){
-                                                        //chamar a função levantar Bicicleta
-                                                        levantarBicicleta(reserva.getIdReserva(),utilizador.getId());
 
-                                                        //inicializar a trajectoria
-                                                        currentTrajectory.setIdBike(bicicleta.getIdBicicleta());
-                                                        currentTrajectory.setUser(utilizador);
-                                                        currentTrajectory.setLatitudeInicio(currentLocation.getLatitude());
-                                                        currentTrajectory.setLongitudeInicio(currentTrajectory.getLongitudeInicio());
-                                                        Log.d("Inicializacao","Trajectoria Inicializada");
+          }
 
-                                                    }else if(bicicleta.getStatus().equals("EM_USO")){
-                                                        //chamar a função Devolver Bicicleta
-                                                        devolverBicicleta(reserva.getIdReserva(),utilizador.getId(),reserva.getEstacaoDevolucao().getIdEstacao());
-                                                        //enviar a trajectoria
-                                                        currentTrajectory.setLatitudeFim(currentLocation.getLatitude());
-                                                        currentTrajectory.setLongitudeFim(currentLocation.getLongitude());
-                                                        enviarTrajectoria(currentTrajectory);
+          private void verificarReservas(User user, Location location) {
+              apiService.getAllReservas().enqueue(new Callback<List<Reserva>>() {
+                  @Override
+                  public void onResponse(Call<List<Reserva>> call, Response<List<Reserva>> response) {
+                      if (response.isSuccessful() && response.body() != null) {
+                          List<Reserva> reservas = response.body();
+                          Log.d("API", "Reservas recebidas: " + reservas.size() + " para o usuário: " + user.getId());
+                          for (Reserva reserva : reservas) {
+                              if (user.getId().equals(reserva.getUsuario().getId())) {
+                                  Log.d("API", "Reserva encontrada para o usuário: " + user.getId());
+                                  processarReserva(reserva, location, user);
+                              }else{
+                                  Log.e("API", "Resposta falhou: " + response.errorBody());
+                              }
+                          }
+                      }
+                  }
 
-                                                    }
-                                                }
+                  @Override
+                  public void onFailure(Call<List<Reserva>> call, Throwable t) {
+                      Log.e("API", "Erro na chamada: " + t.getMessage());
+                  }
+              });
+          }
 
-                                            }
-                                        } else {
-                                            System.err.println("Erro na resposta: " + response.code());
-                                        }
-                                    }
+          private void processarReserva(Reserva reserva, Location location, User user) {
+              Bicicleta bicicleta = reserva.getBicicleta();
+              StatusBicicleta statusBackend = StatusBicicleta.fromString(bicicleta.getStatus().toString());
 
-                                    @Override
-                                    public void onFailure(Call<List<Reserva>> call, Throwable t) {
-                                        Log.e("API","Erro na chamada: " + t.getMessage());
-                                    }
-                                });
-                                /*reinicia o rastreamento*/
-                                currentTrajectory = null;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        };
+              Log.d("API", "Status da bicicleta: " + statusBackend);
+
+              if (statusBackend == StatusBicicleta.RESERVADA) {
+                  Log.d("API", "Bicicleta reservada encontrada: " + bicicleta.getIdBicicleta());
+                  levantarBicicleta(reserva.getIdReserva(), user.getId());
+                  inicializarTrajectoria(bicicleta, user, location);
+              } else if (statusBackend == StatusBicicleta.EM_USO) {
+                  Log.d("API", "Bicicleta em uso encontrada: " + bicicleta.getIdBicicleta());
+                  devolverBicicleta(reserva.getIdReserva(), user.getId(), reserva.getEstacaoDevolucao().getIdEstacao());
+                  finalizarTrajectoria(location);
+              }
+          }
+
+          private void inicializarTrajectoria(Bicicleta bicicleta, User user, Location location) {
+              currentTrajectory.setIdBike(bicicleta.getIdBicicleta());
+              currentTrajectory.setUser(user);
+              currentTrajectory.setLatitudeInicio(location.getLatitude());
+              currentTrajectory.setLongitudeInicio(location.getLongitude());
+              Log.d("API", "Trajectoria Inicializada para a bicicleta: " + bicicleta.getIdBicicleta());
+
+          }
+
+          private void finalizarTrajectoria(Location location) {
+              currentTrajectory.setLatitudeFim(location.getLatitude());
+              currentTrajectory.setLongitudeFim(location.getLongitude());
+              enviarTrajectoria(currentTrajectory);
+              Log.d("API", "Trajectoria finalizada com sucesso para a bicicleta: " + currentTrajectory.getIdBike());
+              currentTrajectory = null;
+          }
+      };
+
+
+        showAllPoint();
         setupLocationUpdates();
+
 
         dialog = new Dialog(activity_home.this);
         dialog.setContentView(R.layout.activity_dialog_share);
@@ -419,9 +453,11 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
     private void showAllPoint(){
         for(Trajectoria trajectory : allTrajectories){
             if(trajectory != null){
-
+                Log.e("currentLocation","Latitude: " + currentLocation.getLatitude()
+                        +"Longitude: " + currentLocation.getLongitude()
+                );
             }else{
-                Log.e("TrajectoryPoints", "Location is null");
+                Log.e("currentLocation", "Location is null");
 
             }
         }
@@ -653,6 +689,7 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         return false;
     }
 
+
     private  void levantarBicicleta(Long idReserva, Integer idUsuario) {
         /*final boolean[] retorno = {false};*/
         apiService.levantarBicicleta(idReserva, idUsuario).enqueue(new Callback<String>() {
@@ -660,6 +697,8 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
                     Log.d("API","Bicicleta Levantada com Sucesso");
+                    Toast.makeText(activity_home.this,"Bicicleta Levantada",Toast.LENGTH_SHORT).show();
+
                 } else {
                     Log.d("API","Erro ao levantar bicicleta: " + response.code());
 
@@ -680,6 +719,7 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
                 if(response.isSuccessful()){
                     Log.d("API_devolver","Bicicleta Devolvida com Sucesso");
+                    Toast.makeText(activity_home.this,"Bicicleta Devolvida",Toast.LENGTH_SHORT).show();
                 }else{
                     Log.d("API_devolver","Erro ao devolver a bicicleta: " + response.code());
                 }
@@ -711,8 +751,21 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                 });
     }
 
-    private void updateUser(User use){
-
+    private void obterUtilizador(int userId, UserCallback callback) {
+        Call<User> call = apiService.getUserById(userId);
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onUserReceived(response.body());
+                }
+            }
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e(TAG, "onFailure: ", t);
+                callback.onError(t);
+            }
+        });
     }
 
 }

@@ -44,14 +44,14 @@ public interface ApiService {
             @Query("idReserva") Long idReserva,
             @Query("idUsuario") Integer idUsuario
     );
-    @POST("/bicicleta/devolver")
+    @POST("/bicicletas/devolver")
     Call<Map<String,Object>>devolverBicicleta(
-            @Query ("idReserva") Long idReserva,
-            @Query ("Integer") Integer idUsuario,
-            @Query ("Integer") Integer idEstacaoDevolucao
+            @Query("idReserva") Long idReserva,
+            @Query("idUsuario") Integer idUsuario,
+            @Query("idEstacaoDevolucao") Integer idEstacaoDevolucao
     );
 
-    @GET("/bicicletas/reservas")
+    @GET("/reservas")
     Call<List<Reserva>>getAllReservas();
 
     @POST("/pontoIntermediario")

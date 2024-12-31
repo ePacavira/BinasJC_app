@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class User {
-        private int id;
+        private Integer id;
         private String nome;
         private String email;
         private String palavra_passe;
@@ -15,11 +15,11 @@ public class User {
             this.trajectories.add(trajectory);
         }
         // Getters e setters
-        public int getId() {
+        public Integer getId() {
             return id;
         }
 
-        public void setId(int id) { this.id = id; }
+        public void setId(Integer id) { this.id = id; }
 
         public String getNome() {
             return nome;
@@ -53,7 +53,18 @@ public class User {
             this.pontuacao = pontuacao;
         }
 
-    /*public List<Trajectory> getTrajectories() {
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", nome='" + nome + '\'' +
+                ", email='" + email + '\'' +
+                ", palavra_passe='" + palavra_passe + '\'' +
+                ", pontuacao=" + pontuacao +
+                '}';
+    }
+
+        /*public List<Trajectory> getTrajectories() {
         return trajectories;
     }
 

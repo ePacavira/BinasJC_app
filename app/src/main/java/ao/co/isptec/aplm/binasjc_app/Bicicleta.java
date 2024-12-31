@@ -1,10 +1,21 @@
 package ao.co.isptec.aplm.binasjc_app;
 
- enum StatusBicicleta{
+enum StatusBicicleta{
      DISPONIVEL,
      RESERVADA,
      EM_USO,
      MANUTENCAO;
+
+    public static StatusBicicleta fromString(String value) {
+        if (value != null) {
+            for (StatusBicicleta status : StatusBicicleta.values()) {
+                if (status.name().equalsIgnoreCase(value)) {
+                    return status;
+                }
+            }
+        }
+        throw new IllegalArgumentException("Unknown enum value: " + value);
+    }
 }
 
 public class Bicicleta {

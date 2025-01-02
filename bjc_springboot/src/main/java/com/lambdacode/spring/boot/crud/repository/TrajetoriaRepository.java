@@ -11,5 +11,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TrajetoriaRepository extends JpaRepository<Trajetoria, Integer> {
-        
 }

@@ -54,7 +54,8 @@ public interface ApiService {
     @GET("/reservas")
     Call<List<Reserva>>getAllReservas();
 
-    @POST("/pontoIntermediario")
-    Call<PontoIntermediario>createOrUpdatePontoIntermediario(@Body PontoIntermediario pontoIntermediário);
+    @POST("/pontos-intermediarios/add")
+    Call<PontoIntermediario>createPontoIntermediario(@Body PontoIntermediario pontoIntermediário);
+
 
 }

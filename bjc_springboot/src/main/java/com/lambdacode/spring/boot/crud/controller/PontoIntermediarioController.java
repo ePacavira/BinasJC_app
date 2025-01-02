@@ -1,51 +1,56 @@
 package com.lambdacode.spring.boot.crud.controller;
 
 import com.lambdacode.spring.boot.crud.entity.PontoIntermediario;
-import com.lambdacode.spring.boot.crud.repository.PontoIntermediarioRepositorio;
 import com.lambdacode.spring.boot.crud.service.PontoIntermediarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/pontoIntermediario")
+@RequestMapping("/pontos-intermediarios")
 public class PontoIntermediarioController {
 
     @Autowired
     private PontoIntermediarioService pontoIntermediarioService;
 
-    @Autowired
-    private PontoIntermediarioRepositorio pontoIntermediarioRepositorio;
-
+    // 1. Obter todos os pontos intermediários
     @GetMapping
-    public List<PontoIntermediario> getAll() {
-        return pontoIntermediarioRepositorio.findAll();
+    public ResponseEntity<List<PontoIntermediario>> getAllPontosIntermediarios() {
+        List<PontoIntermediario> pontos = pontoIntermediarioService.getAllPontosIntermediarios();
+        return ResponseEntity.ok(pontos);
     }
 
-    @GetMapping("/{id}")
+    // 2. Obter um ponto intermediário por ID
+    @GetMapping("/get/{id}")
     public ResponseEntity<PontoIntermediario> getPontoIntermediarioById(@PathVariable Integer id) {
-        Optional<PontoIntermediario> pontoIntermediario = pontoIntermediarioService.findById(id);
-        if (pontoIntermediario.isPresent()) {
-            return ResponseEntity.ok(pontoIntermediario.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return pontoIntermediarioService.getPontoIntermediarioById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    // 3. Criar um novo ponto intermediário
     @PostMapping("/add")
-    public ResponseEntity<PontoIntermediario> createOrUpdatePontoIntermediario(@RequestBody PontoIntermediario pontoIntermediario) {
-        PontoIntermediario savedPontoIntermediario = pontoIntermediarioService.save(pontoIntermediario);
-        return ResponseEntity.ok(savedPontoIntermediario);
+    public ResponseEntity<PontoIntermediario> createPontoIntermediario(@RequestBody PontoIntermediario pontoIntermediario) {
+        PontoIntermediario novoPonto = pontoIntermediarioService.createPontoIntermediario(pontoIntermediario);
+        return ResponseEntity.ok(novoPonto);
     }
 
-    @DeleteMapping("/{id}")
+    // 4. Atualizar um ponto intermediário existente
+    @PutMapping("/update/{id}")
+    public ResponseEntity<PontoIntermediario> updatePontoIntermediario(@PathVariable Integer id, @RequestBody PontoIntermediario pontoIntermediario) {
+        return pontoIntermediarioService.updatePontoIntermediario(id, pontoIntermediario)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 5. Deletar um ponto intermediário
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deletePontoIntermediario(@PathVariable Integer id) {
-        pontoIntermediarioService.deleteById(id);
-        return ResponseEntity.noContent().build();
+        if (pontoIntermediarioService.deletePontoIntermediario(id)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
-
-

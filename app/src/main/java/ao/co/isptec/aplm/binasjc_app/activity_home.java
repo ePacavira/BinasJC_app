@@ -242,8 +242,9 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                   if (distancia > 150) {
                       pontosIntermediarios.add(currentLatLng);
                       PontoIntermediario ponto = new PontoIntermediario(currentLatLng.latitude, currentLatLng.longitude);
-                      // enviarPontoIntermediario(ponto);
-                      Log.d("currentLocation", "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude());
+                      ponto.setTrajetoria(new PontoIntermediario.TrajetoriaRef(currentTrajectory.getIdTrajetoria()));
+                      enviarPontoIntermediario(ponto);
+                      Log.d("PontoIntermediario", " +++PontoEnviado Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude());
                   }
 
                    //Actualizar a pontuação em função da distância
@@ -757,7 +758,8 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
     }
 
     private void enviarPontoIntermediario(PontoIntermediario ponto){
-        apiService.createOrUpdatePontoIntermediario(ponto)
+        Log.d("PontoIntermediario","Iniando a analise do conjunto de Pontos");
+        apiService.createPontoIntermediario(ponto)
                 .enqueue(new Callback<PontoIntermediario>() {
                     @Override
                     public void onResponse(Call<PontoIntermediario> call, Response<PontoIntermediario> response) {
@@ -769,5 +771,9 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                         Log.e("PontoIntermediario","Erro ao enviar o Ponto");
                     }
                 });
+    }
+
+    private void actualizarPontucao(User user){
+        //apiService.updateUser(user)
     }
 }

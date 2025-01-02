@@ -4,6 +4,7 @@
  */
 package com.lambdacode.spring.boot.crud.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,8 +21,9 @@ public class PontoIntermediario {
     @Column(name = "id_ponto")
     private Integer idPonto;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_trajetoria", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
     private Trajetoria trajetoria;
 
     @Column(nullable = false, precision = 10, scale = 8)

@@ -1,7 +1,7 @@
 package ao.co.isptec.aplm.binasjc_app;
 
 public class Reserva {
-    private Long idReserva;
+    private Integer idReserva;
 
     private User usuario;
 
@@ -14,11 +14,11 @@ public class Reserva {
 
     private StatusBicicleta status;
 
-    public Long getIdReserva() {
+    public Integer getIdReserva() {
         return idReserva;
     }
 
-    public void setIdReserva(Long idReserva) {
+    public void setIdReserva(Integer idReserva) {
         this.idReserva = idReserva;
     }
 

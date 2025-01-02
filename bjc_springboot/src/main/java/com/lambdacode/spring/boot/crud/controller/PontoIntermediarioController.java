@@ -1,6 +1,7 @@
 package com.lambdacode.spring.boot.crud.controller;
 
 import com.lambdacode.spring.boot.crud.entity.PontoIntermediario;
+import com.lambdacode.spring.boot.crud.repository.PontoIntermediarioRepositorio;
 import com.lambdacode.spring.boot.crud.service.PontoIntermediarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +17,12 @@ public class PontoIntermediarioController {
     @Autowired
     private PontoIntermediarioService pontoIntermediarioService;
 
+    @Autowired
+    private PontoIntermediarioRepositorio pontoIntermediarioRepositorio;
+
     @GetMapping
-    public ResponseEntity<List<PontoIntermediario>> getAllPontosIntermediarios() {
-        List<PontoIntermediario> pontosIntermediarios = pontoIntermediarioService.findAll();
-        return ResponseEntity.ok(pontosIntermediarios);
+    public List<PontoIntermediario> getAll() {
+        return pontoIntermediarioRepositorio.findAll();
     }
 
     @GetMapping("/{id}")

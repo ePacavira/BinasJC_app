@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Estacao {
-    private int idEstacao;
+    private Integer idEstacao;
     private String nome;
     private double latitude;
     private double longitude;
@@ -39,6 +39,10 @@ public class Estacao {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public void setIdEstacao(Integer idEstacao) {
+        this.idEstacao = idEstacao;
     }
 
     /*Relacionamento com Bike

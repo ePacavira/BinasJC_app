@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -23,8 +24,6 @@ public class UserController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-   /* @Autowired
-    private UserDAO userDAO;*/
 
     @PostMapping("/add")
     public String addUser(@RequestBody User user) {
@@ -37,16 +36,22 @@ public class UserController {
         return userService.getUsers();
     }
 
-    @GetMapping("/get/{id}")
+   /* @GetMapping("/get/{id}")
     public ResponseEntity<User> getUser(@PathVariable Integer id) {
-        User userOptional = userService.getUser(id); // Usando Optional aqui
+        User user = userService.getUser(id);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }*/
+   @GetMapping("/get/{id}")
+   public ResponseEntity<User> getUser(@PathVariable Integer id) {
+       try {
+           User user = userService.getUser(id);
+           return ResponseEntity.ok(user);
+       } catch (ResponseStatusException e) {
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+       }
+   }
 
-        if (userOptional != null) {
-            return ResponseEntity.ok(userOptional); // Retorna o usuário se encontrado
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); // Retorna 404 se não encontrado
-        }
-    }
+
 
     @PutMapping("/update/{id}")
     public ResponseEntity<Map<String, Object>> updateUser(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {

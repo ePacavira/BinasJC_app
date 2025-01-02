@@ -1,9 +1,9 @@
 package ao.co.isptec.aplm.binasjc_app;
 
 import static android.content.ContentValues.TAG;
+import static android.location.Location.distanceBetween;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 
@@ -54,6 +54,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -89,6 +90,10 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private int totalPoints = 0;
     List<LatLng> pontosIntermediarios = new ArrayList<>();
+    List<Estacao> estacoes = new ArrayList<>();
+    Integer idEstacao = 0;
+    private Trajectoria currentTrajectory = new Trajectoria();
+    private boolean isTrackingStarted = false;
 
 
     // Obter instância de Retrofit
@@ -159,7 +164,7 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             public void onResponse(Call<List<Estacao>> call, Response<List<Estacao>> response) {
                 if (response.isSuccessful()){
                     //obter a lista de estacoes
-                    List<Estacao> estacoes = response.body();
+                    estacoes = response.body();
                     Log.d("EstacaoDebug", "Número de estações recebidas: " + estacoes.size());
                     for (Estacao estacao : estacoes) {
                         // Adiciona Estações predefinidas
@@ -186,8 +191,8 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
 
       locationCallback = new LocationCallback() {
-          private Trajectoria currentTrajectory = new Trajectoria();
-          private User currentUser = null;          @Override
+          private User currentUser = null;
+          @Override
           public void onLocationResult(@NonNull LocationResult locationResult) {
               if(locationResult != null){
                   Location location = locationResult.getLastLocation();
@@ -195,25 +200,26 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                       LatLng currentLatLng = new LatLng(location.getLatitude(), location.getLongitude());
                       //obter o usuario
                       if(currentUser == null){
-                          Log.d("API", "User obtido com sucesso***: " + userId);
-                          obterUtilizador(userId, new UserCallback() {
+                          ApiService apiService = retrofit.create(ApiService.class);
+                          Call<User> call = apiService.getUserById(userId);
+                          call.enqueue(new Callback<User>() {
                               @Override
-                              public void onUserReceived(User user) {
-                                  currentUser = user;
-                                  Log.d("API", "User obtido com sucesso: " + user.getId());
-
+                              public void onResponse(Call<User> call, Response<User> response) {
+                                  if (response.isSuccessful() && response.body() != null) {
+                                      currentUser = response.body();;
+                                      processarLocalizacao(location, currentLatLng);
+                                  }
                               }
                               @Override
-                              public void onError(Throwable t) {
-                                  Log.e("API", "Error ao obter o user: " + t.getMessage());
-                                  processarLocalizacao(location, currentLatLng);
+                              public void onFailure(Call<User> call, Throwable t) {
+                                  Log.e("API", "Erro ao obter usuário", t);
                               }
                           });
-                      }else{
-                          Log.d("API", "User já inicializado: " + currentUser.getId());
+                      } else if(!isTrackingStarted) {
+                          processarLocalizacao(location, currentLatLng);
+                      } else {
                           processarLocalizacao(location, currentLatLng);
                       }
-
                   }
 
               }
@@ -223,7 +229,7 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
               for (int i = 1; i < pontosIntermediarios.size(); i++) {
                   LatLng pontoAnterior = pontosIntermediarios.get(i - 1);
                   float[] results = new float[1];
-                  Location.distanceBetween(
+                  distanceBetween(
                           pontoAnterior.latitude, pontoAnterior.longitude,
                           currentLatLng.latitude, currentLatLng.longitude,
                           results
@@ -233,53 +239,64 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                   Log.d("API", "Distance calculada: " + distancia + " meteros");
 
 
-                  /*if (distancia > 150) {
+                  if (distancia > 150) {
                       pontosIntermediarios.add(currentLatLng);
                       PontoIntermediario ponto = new PontoIntermediario(currentLatLng.latitude, currentLatLng.longitude);
-                      enviarPontoIntermediario(ponto);
+                      // enviarPontoIntermediario(ponto);
+                      Log.d("currentLocation", "Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude());
                   }
 
-                   //Agora podemos usar currentUser com segurança
+                   //Actualizar a pontuação em função da distância
                   if (distancia >= 300 && currentUser != null) {
                       int pontos = currentUser.getPontuacao() + 1;
                       currentUser.setPontuacao(pontos);
+                      Log.d("Pontuacao","Minha Pontuação: " + currentUser.getPontuacao());
                       // Atualizar usuário na API
 
-                  }*/
+                  }
               }
 
               //verificar estações
               for (String stationName : predefinedLocations.keySet()) {
                   LatLng stationLatLng = predefinedLocations.get(stationName);
                   float[] results = new float[1];
-                  Location.distanceBetween(
+                  distanceBetween(
                           location.getLatitude(), location.getLongitude(),
                           stationLatLng.latitude, stationLatLng.longitude,
                           results
                   );
                   if (results[0] <= 20 && currentUser != null) {
+                      Log.d("API","Utilizador encontrado: " + currentUser.toString().toString());
                       Log.d("API", "verificando o conjunto de resevas " + currentUser.getId());
+                      //obter o id da estacao onde o utilizador se encontra
+                      for(Estacao estacao : estacoes){
+                          float[] result = new float[1];
+                          Location.distanceBetween(location.getLatitude(), location.getLongitude(),
+                                  estacao.getLatitude(),estacao.getLongitude(), result);
+                          if(result[0] <= 20){
+                              idEstacao = estacao.getIdEstacao();
+                          }
+                      }
+                      Log.d("API"," 1) IdEstacao: " + idEstacao);
                       verificarReservas(currentUser, location);
                       break;
                   }
               }
-
-
           }
 
           private void verificarReservas(User user, Location location) {
+              Log.d("API"," 2) IdEstacao: " + idEstacao);
               apiService.getAllReservas().enqueue(new Callback<List<Reserva>>() {
                   @Override
                   public void onResponse(Call<List<Reserva>> call, Response<List<Reserva>> response) {
                       if (response.isSuccessful() && response.body() != null) {
+                          Log.d("API", "Status HTTP: " + response.code());
                           List<Reserva> reservas = response.body();
-                          Log.d("API", "Reservas recebidas: " + reservas.size() + " para o usuário: " + user.getId());
+                          Log.d("API", "Conjunto de Reservas Encontradas: " + reservas.size());
                           for (Reserva reserva : reservas) {
                               if (user.getId().equals(reserva.getUsuario().getId())) {
-                                  Log.d("API", "Reserva encontrada para o usuário: " + user.getId());
+                                  Log.d("API", " Id usuario: " + user.getId() + " Id Reserva: " + reserva.getIdReserva());
                                   processarReserva(reserva, location, user);
-                              }else{
-                                  Log.e("API", "Resposta falhou: " + response.errorBody());
                               }
                           }
                       }
@@ -297,38 +314,52 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
               StatusBicicleta statusBackend = StatusBicicleta.fromString(bicicleta.getStatus().toString());
 
               Log.d("API", "Status da bicicleta: " + statusBackend);
+              Log.d("API"," 3) IdEstacao: " + idEstacao);
 
               if (statusBackend == StatusBicicleta.RESERVADA) {
                   Log.d("API", "Bicicleta reservada encontrada: " + bicicleta.getIdBicicleta());
+                  inicializarTrajectoria(user, reserva, location);
+                  isTrackingStarted = true;
                   levantarBicicleta(reserva.getIdReserva(), user.getId());
-                  inicializarTrajectoria(bicicleta, user, location);
               } else if (statusBackend == StatusBicicleta.EM_USO) {
                   Log.d("API", "Bicicleta em uso encontrada: " + bicicleta.getIdBicicleta());
-                  devolverBicicleta(reserva.getIdReserva(), user.getId(), reserva.getEstacaoDevolucao().getIdEstacao());
+                  devolverBicicleta(reserva.getIdReserva(), user.getId(),idEstacao);
                   finalizarTrajectoria(location);
               }
           }
 
-          private void inicializarTrajectoria(Bicicleta bicicleta, User user, Location location) {
-              currentTrajectory.setIdBike(bicicleta.getIdBicicleta());
-              currentTrajectory.setUser(user);
+          private void inicializarTrajectoria(User user, Reserva reserva, Location location) {
+              currentTrajectory = new Trajectoria();
+
+              currentTrajectory.setUser(new Trajectoria.UserId(user.getId()));
+              currentTrajectory.setReserva(new Trajectoria.ReservaId(reserva.getIdReserva()));
+
+              // Define as coordenadas iniciais
               currentTrajectory.setLatitudeInicio(location.getLatitude());
               currentTrajectory.setLongitudeInicio(location.getLongitude());
-              Log.d("API", "Trajectoria Inicializada para a bicicleta: " + bicicleta.getIdBicicleta());
 
+              Log.d("Trajectory", "Trajetória inicializada: " + new Gson().toJson(currentTrajectory));
           }
 
           private void finalizarTrajectoria(Location location) {
-              currentTrajectory.setLatitudeFim(location.getLatitude());
-              currentTrajectory.setLongitudeFim(location.getLongitude());
-              enviarTrajectoria(currentTrajectory);
-              Log.d("API", "Trajectoria finalizada com sucesso para a bicicleta: " + currentTrajectory.getIdBike());
-              currentTrajectory = null;
+              try {
+                  if (currentTrajectory != null && isTrackingStarted) {
+                      currentTrajectory.setLatitudeFim(location.getLatitude());
+                      currentTrajectory.setLongitudeFim(location.getLongitude());
+
+                      Log.d("Trajectory", "Enviando trajetória: " + new Gson().toJson(currentTrajectory));
+                      enviarTrajectoria(currentTrajectory);
+
+                      // Reset após envio
+                      currentTrajectory = null;
+                      isTrackingStarted = false;
+                  }
+              } catch (Exception e) {
+                  Log.e("Trajectory", "Erro ao finalizar trajetória", e);
+              }
           }
       };
 
-
-        showAllPoint();
         setupLocationUpdates();
 
 
@@ -450,19 +481,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
         getLastLocation();
     }
 
-    private void showAllPoint(){
-        for(Trajectoria trajectory : allTrajectories){
-            if(trajectory != null){
-                Log.e("currentLocation","Latitude: " + currentLocation.getLatitude()
-                        +"Longitude: " + currentLocation.getLongitude()
-                );
-            }else{
-                Log.e("currentLocation", "Location is null");
-
-            }
-        }
-    }
-
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         gMap = googleMap;
@@ -535,7 +553,7 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             for (String stationName : predefinedLocations.keySet()) {
                 LatLng location = predefinedLocations.get(stationName);
 
-                Location.distanceBetween(
+                distanceBetween(
                         currentLocation.getLatitude(), currentLocation.getLongitude(),
                         location.latitude, location.longitude, results
                 );
@@ -667,16 +685,17 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
     }
 
-    private boolean enviarTrajectoria(Trajectoria trajectory){
+    private void enviarTrajectoria(Trajectoria trajectory){
+        Log.d("Trajectory", "Preparando o envio da Trajectoria");
         apiService.saveTrajectory(trajectory)
                 .enqueue(new Callback<Trajectoria>() {
                     @Override
                     public void onResponse(Call<Trajectoria> call, Response<Trajectoria> response) {
+                        Log.d("Trajectory", "Código de resposta: " + response.code());
                         if(response.isSuccessful()){
                             Log.d("API", "Trajetória enviada com sucesso: " + response.body());
 
                         }else{
-                            Log.d("API", "Código de resposta: " + response.code());
                             Log.e("API", "Erro no servidor: " + response.code() + ", " + response.errorBody());
                         }
                     }
@@ -686,15 +705,13 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                         Log.e("API", "Erro ao enviar a trajetória", t);
                     }
                 });
-        return false;
     }
 
-
-    private  void levantarBicicleta(Long idReserva, Integer idUsuario) {
+    private  void levantarBicicleta(Integer idReserva, Integer idUsuario) {
         /*final boolean[] retorno = {false};*/
-        apiService.levantarBicicleta(idReserva, idUsuario).enqueue(new Callback<String>() {
+        apiService.levantarBicicleta(idReserva, idUsuario).enqueue(new Callback<Bicicleta>() {
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
+            public void onResponse(Call<Bicicleta> call, Response<Bicicleta> response) {
                 if (response.isSuccessful()) {
                     Log.d("API","Bicicleta Levantada com Sucesso");
                     Toast.makeText(activity_home.this,"Bicicleta Levantada",Toast.LENGTH_SHORT).show();
@@ -706,22 +723,28 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<Bicicleta> call, Throwable t) {
                 Log.e("API_Levantas","Falha na chamada da API: " + t.getMessage());
             }
         });
     }
 
-    private  void devolverBicicleta (Long idReserva, Integer idUsuario, Integer idEstacaoDevolucao){
-       /* final boolean[] retorno = {false};*/
+    private  void devolverBicicleta (Integer idReserva, Integer idUsuario, Integer idEstacaoDevolucao){
         apiService.devolverBicicleta(idReserva,idUsuario,idEstacaoDevolucao).enqueue(new Callback<Map<String, Object>>() {
+
             @Override
             public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
-                if(response.isSuccessful()){
-                    Log.d("API_devolver","Bicicleta Devolvida com Sucesso");
-                    Toast.makeText(activity_home.this,"Bicicleta Devolvida",Toast.LENGTH_SHORT).show();
-                }else{
-                    Log.d("API_devolver","Erro ao devolver a bicicleta: " + response.code());
+                Log.d("API","Indo Devolver a Bicicleta!!!");
+                if(response.isSuccessful() && response.body() != null){
+                    Map<String,Object> responseBody = response.body();
+                    if((Boolean) responseBody.get("success")){
+                        Log.d("API","Bicicleta Devolvida com Sucesso");
+                        Toast.makeText(activity_home.this,"Bicicleta Devolvida",Toast.LENGTH_SHORT).show();
+                    }else{
+                        Log.d("API", "Erro: " + responseBody.get("message"));
+                    }
+                    }else{
+                    Log.d("API","Erro ao devolver a bicicleta: " + response.code());
                 }
             }
 
@@ -733,39 +756,18 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
     }
 
-    private void enviarPontoIntermediario(PontoIntermediario pontoIntermediario){
-        apiService.createOrUpdatePontoIntermediario(pontoIntermediario)
+    private void enviarPontoIntermediario(PontoIntermediario ponto){
+        apiService.createOrUpdatePontoIntermediario(ponto)
                 .enqueue(new Callback<PontoIntermediario>() {
                     @Override
                     public void onResponse(Call<PontoIntermediario> call, Response<PontoIntermediario> response) {
-                        if(response.isSuccessful()){
-                            Log.d("Ponto","Ponto Enviado com sucesso! ");
-                        }else{
-                            Log.e("Ponto", "Erro ao enviar Ponto Intermediario : " + response.code());
-                        }
+                        Log.d("PontoIntermediario", "Resposta da API: " + response.code());
+
                     }
                     @Override
                     public void onFailure(Call<PontoIntermediario> call, Throwable t) {
-
+                        Log.e("PontoIntermediario","Erro ao enviar o Ponto");
                     }
                 });
     }
-
-    private void obterUtilizador(int userId, UserCallback callback) {
-        Call<User> call = apiService.getUserById(userId);
-        call.enqueue(new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    callback.onUserReceived(response.body());
-                }
-            }
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-                Log.e(TAG, "onFailure: ", t);
-                callback.onError(t);
-            }
-        });
-    }
-
 }

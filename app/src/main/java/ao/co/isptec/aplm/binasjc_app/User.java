@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class User {
-        private Integer id;
+        private Integer idUsuario;
         private String nome;
         private String email;
         private String palavra_passe;
@@ -16,10 +16,10 @@ public class User {
         }
         // Getters e setters
         public Integer getId() {
-            return id;
+            return idUsuario;
         }
 
-        public void setId(Integer id) { this.id = id; }
+        public void setId(Integer id) { this.idUsuario = id; }
 
         public String getNome() {
             return nome;
@@ -56,7 +56,7 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
+                "id=" + idUsuario +
                 ", nome='" + nome + '\'' +
                 ", email='" + email + '\'' +
                 ", palavra_passe='" + palavra_passe + '\'' +

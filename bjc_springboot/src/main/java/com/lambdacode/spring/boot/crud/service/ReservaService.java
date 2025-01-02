@@ -93,7 +93,7 @@ public class ReservaService {
         return response;
     }
 
-    public Map<String, Object> devolverBicicleta(Long idReserva, Integer idUsuario, Integer idEstacaoDevolucao) {
+    public Map<String, Object> devolverBicicleta(Integer idReserva, Integer idUsuario, Integer idEstacaoDevolucao) {
         Map<String, Object> response = new HashMap<>();
 
         // Encontrar a reserva pelo ID

@@ -17,7 +17,7 @@ public interface ApiService {
     Call<List<User>> getUsers();
 
     @GET("usuarios/get/{id}")
-    Call<User> getUserById(@Path("id") int userId);
+    Call<User> getUserById(@Path("id") Integer userId);
 
     @POST("auth/signup")
     Call<AuthResponse> signUp(@Body User user);
@@ -31,7 +31,7 @@ public interface ApiService {
     @PUT("auth/update-password/{id}")
     Call<AuthResponse> updatePassword(@Path("id") int userId, @Body PasswordPayload passwordPayload);
 
-    @POST("/trajectories/add")
+    @POST("/trajetorias/add")
     Call<Trajectoria> saveTrajectory(@Body Trajectoria trajectorie);
 
     @GET("/estacoes")
@@ -40,13 +40,13 @@ public interface ApiService {
     Call<List<Bicicleta>>getAllBicicletas();
 
     @POST("/bicicletas/levantar")
-    Call<String> levantarBicicleta(
-            @Query("idReserva") Long idReserva,
+    Call<Bicicleta> levantarBicicleta(
+            @Query("idReserva") Integer idReserva,
             @Query("idUsuario") Integer idUsuario
     );
     @POST("/bicicletas/devolver")
     Call<Map<String,Object>>devolverBicicleta(
-            @Query("idReserva") Long idReserva,
+            @Query("idReserva") Integer idReserva,
             @Query("idUsuario") Integer idUsuario,
             @Query("idEstacaoDevolucao") Integer idEstacaoDevolucao
     );

@@ -6,44 +6,57 @@ import java.time.LocalTime;
 import java.util.List;
 
 public class Trajectoria {
-    private int id_trajectory;
 
-    private int idBike;
-
-    private User user;
-
+    private Integer idTrajetoria;
+    private ReservaId reserva;
+    private UserId user;
     private double latitudeInicio;
-
-    private double latitudeFim;
-
     private double longitudeInicio;
-
+    private double latitudeFim;
     private double longitudeFim;
 
-    private String stationStart;
-    private String stationEnd;
+    // Classe interna para representar ID da reserva
+    public static class ReservaId {
+        private Integer idReserva;
 
-    public int getId_trajectory() {
-        return id_trajectory;
+        public ReservaId(Integer idReserva) {
+            this.idReserva = idReserva;
+        }
     }
 
-    public void setId_trajectory(int id_trajectory) {
-        this.id_trajectory = id_trajectory;
+    // Classe interna para representar ID do usuário
+    public static class UserId {
+        private Integer id;
+
+        public UserId(Integer id) {
+            this.id = id;
+        }
     }
 
-    public int getIdBike() {
-        return idBike;
+    // Getters e setters
+
+
+    public Integer getIdTrajetoria() {
+        return idTrajetoria;
     }
 
-    public void setIdBike(int idBike) {
-        this.idBike = idBike;
+    public void setIdTrajetoria(Integer idTrajetoria) {
+        this.idTrajetoria = idTrajetoria;
     }
 
-    public User getUser() {
+    public ReservaId getReserva() {
+        return reserva;
+    }
+
+    public void setReserva(ReservaId reserva) {
+        this.reserva = reserva;
+    }
+
+    public UserId getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(UserId user) {
         this.user = user;
     }
 
@@ -55,14 +68,6 @@ public class Trajectoria {
         this.latitudeInicio = latitudeInicio;
     }
 
-    public double getLatitudeFim() {
-        return latitudeFim;
-    }
-
-    public void setLatitudeFim(double latitudeFim) {
-        this.latitudeFim = latitudeFim;
-    }
-
     public double getLongitudeInicio() {
         return longitudeInicio;
     }
@@ -71,27 +76,19 @@ public class Trajectoria {
         this.longitudeInicio = longitudeInicio;
     }
 
+    public double getLatitudeFim() {
+        return latitudeFim;
+    }
+
+    public void setLatitudeFim(double latitudeFim) {
+        this.latitudeFim = latitudeFim;
+    }
+
     public double getLongitudeFim() {
         return longitudeFim;
     }
 
     public void setLongitudeFim(double longitudeFim) {
         this.longitudeFim = longitudeFim;
-    }
-
-    public String getStationStart() {
-        return stationStart;
-    }
-
-    public void setStationStart(String stationStart) {
-        this.stationStart = stationStart;
-    }
-
-    public String getStationEnd() {
-        return stationEnd;
-    }
-
-    public void setStationEnd(String stationEnd) {
-        this.stationEnd = stationEnd;
     }
 }

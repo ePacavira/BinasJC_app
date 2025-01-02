@@ -5,7 +5,6 @@
 package com.lambdacode.spring.boot.crud.service;
 
 import com.lambdacode.spring.boot.crud.entity.Bicicleta;
-import com.lambdacode.spring.boot.crud.entity.Bicicleta.StatusBicicleta;
 import com.lambdacode.spring.boot.crud.entity.Reserva;
 import com.lambdacode.spring.boot.crud.repository.BicicletaRepository;
 import com.lambdacode.spring.boot.crud.repository.ReservaRepository;
@@ -30,7 +29,7 @@ public class BicicletaService {
     @Autowired
     private BicicletaRepository bicicletaRepository;
 
-    public void levantarBicicleta(Long idReserva, Integer idUsuario) {
+    public Bicicleta levantarBicicleta(Integer idReserva, Integer idUsuario) {
         // Buscar a reserva
         Reserva reserva = reservaRepository.findById(idReserva)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reserva não encontrada"));
@@ -54,6 +53,7 @@ public class BicicletaService {
 
         reservaRepository.save(reserva);
         bicicletaRepository.save(bicicleta);
+        return bicicleta;
     }
 
     public List<Bicicleta> getAllBicicletas() {

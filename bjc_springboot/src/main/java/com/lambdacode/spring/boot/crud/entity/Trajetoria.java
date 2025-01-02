@@ -40,6 +40,11 @@ public class Trajetoria {
     @Column(name = "horario_fim")
     private LocalDateTime horarioFim;
 
+    @ElementCollection(fetch = FetchType.EAGER) // Carregamento imediato
+    @CollectionTable(name = "pontos_intermediarios", joinColumns = @JoinColumn(name = "id_trajetoria"))
+    @Column(name = "ponto_intermediario")
+    private List<String> pontosIntermediarios;
+
     @PrePersist
     private void setHorarioInicio() {
         if (horarioInicio == null) {

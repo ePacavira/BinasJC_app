@@ -226,11 +226,11 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
           }
 
           private void processarLocalizacao(Location location, LatLng currentLatLng) {
-              for (int i = 1; i < pontosIntermediarios.size(); i++) {
-                  LatLng pontoAnterior = pontosIntermediarios.get(i - 1);
+              if (!pontosIntermediarios.isEmpty()) {
+                  LatLng ultimoPonto = pontosIntermediarios.get(pontosIntermediarios.size() - 1);
                   float[] results = new float[1];
                   distanceBetween(
-                          pontoAnterior.latitude, pontoAnterior.longitude,
+                          ultimoPonto.latitude, ultimoPonto.longitude,
                           currentLatLng.latitude, currentLatLng.longitude,
                           results
                   );
@@ -757,21 +757,32 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
     }
 
-    private void enviarPontoIntermediario(PontoIntermediario ponto){
-        Log.d("PontoIntermediario","Iniando a analise do conjunto de Pontos");
-        apiService.createPontoIntermediario(ponto)
-                .enqueue(new Callback<PontoIntermediario>() {
-                    @Override
-                    public void onResponse(Call<PontoIntermediario> call, Response<PontoIntermediario> response) {
-                        Log.d("PontoIntermediario", "Resposta da API: " + response.code());
+    private void enviarPontoIntermediario(PontoIntermediario ponto) {
+        Log.d("API", "Enviando ponto intermediário: Latitude = " + ponto.getLatitude() + ", Longitude = " + ponto.getLongitude());
+        Log.d("API", "Trajetória associada: ID = " + ponto.getTrajetoria().getIdTrajetoria());
 
-                    }
-                    @Override
-                    public void onFailure(Call<PontoIntermediario> call, Throwable t) {
-                        Log.e("PontoIntermediario","Erro ao enviar o Ponto");
-                    }
-                });
+        // Crie uma instância do Retrofit e do ApiService
+        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
+
+        // Enviar o ponto intermediário usando o ApiService
+        apiService.createPontoIntermediario(ponto).enqueue(new Callback<PontoIntermediario>() {
+            @Override
+            public void onResponse(Call<PontoIntermediario> call, Response<PontoIntermediario> response) {
+                if (response.isSuccessful()) {
+                    Log.d("API", "Ponto enviado com sucesso.");
+                } else {
+                    Log.e("API", "Falha ao enviar ponto: " + response.errorBody());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PontoIntermediario> call, Throwable t) {
+                Log.e("API", "Erro na comunicação com a API: " + t.getMessage());
+            }
+        });
     }
+
+
 
     private void actualizarPontucao(User user){
         //apiService.updateUser(user)

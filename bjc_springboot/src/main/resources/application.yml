@@ -9,7 +9,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/db_binasjc?useSSL=false&serverTimezone=UTC  # Adiciona timezone e desativa SSL
     username: root
-    password: yun1
+    password: gost
     hikari:
       maximum-pool-size: 10  # Define o número máximo de conexões no pool
       minimum-idle: 2       # Define o número mínimo de conexões inativas

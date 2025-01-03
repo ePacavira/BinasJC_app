@@ -27,6 +27,34 @@ public class PontoIntermediario {
         this.longitude = longitude;
     }
 
+    public Integer getIdPonto() {
+        return idPonto;
+    }
+
+    public void setIdPonto(Integer idPonto) {
+        this.idPonto = idPonto;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public TrajetoriaRef getTrajetoria() {
+        return trajetoria;
+    }
+
     // Update the setter to accept TrajetoriaRef instead of Trajectoria
     public void setTrajetoria(TrajetoriaRef trajetoria) {
         this.trajetoria = trajetoria;

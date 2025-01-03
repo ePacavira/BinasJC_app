@@ -1,11 +1,13 @@
 package com.lambdacode.spring.boot.crud.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -40,10 +42,9 @@ public class Trajetoria {
     @Column(name = "horario_fim")
     private LocalDateTime horarioFim;
 
-    @ElementCollection(fetch = FetchType.EAGER) // Carregamento imediato
-    @CollectionTable(name = "pontos_intermediarios", joinColumns = @JoinColumn(name = "id_trajetoria"))
-    @Column(name = "ponto_intermediario")
-    private List<String> pontosIntermediarios;
+    @JsonManagedReference // Indica que esta relação será serializada
+    @OneToMany(mappedBy = "trajetoria", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PontoIntermediario> pontosIntermediarios = new ArrayList<>();
 
     @PrePersist
     private void setHorarioInicio() {

@@ -5,12 +5,14 @@
 package com.lambdacode.spring.boot.crud.controller;
 
 import com.lambdacode.spring.boot.crud.entity.Trajetoria;
+import com.lambdacode.spring.boot.crud.service.ResourceNotFoundException;
 import com.lambdacode.spring.boot.crud.service.TrajetoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/trajetorias")
@@ -26,9 +28,12 @@ public class TrajetoriaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Trajetoria> getTrajetoriaById(@PathVariable Integer id) {
-        return trajetoriaService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Trajetoria trajetoria = trajetoriaService.findById(id);
+            return ResponseEntity.ok(trajetoria);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/add")
@@ -36,7 +41,7 @@ public class TrajetoriaController {
         return trajetoriaService.save(trajetoria);
     }
 
-    @PutMapping("/{id}")
+    /*@PutMapping("/{id}")
     public ResponseEntity<Trajetoria> updateTrajetoria(@PathVariable Integer id, @RequestBody Trajetoria trajetoria) {
         return trajetoriaService.findById(id)
                 .map(existingTrajetoria -> {
@@ -44,17 +49,17 @@ public class TrajetoriaController {
                     return ResponseEntity.ok(trajetoriaService.save(trajetoria));
                 })
                 .orElse(ResponseEntity.notFound().build());
-    }
+    }*/
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTrajetoria(@PathVariable Integer id) {
-        if (trajetoriaService.findById(id).isPresent()) {
+        try {
+            trajetoriaService.findById(id); // Apenas para validar a existência
             trajetoriaService.deleteById(id);
             return ResponseEntity.noContent().build();
-        } else {
+        } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
+
 }
-
-

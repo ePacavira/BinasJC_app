@@ -43,7 +43,7 @@ public class Trajetoria {
     private LocalDateTime horarioFim;
 
     @JsonManagedReference // Indica que esta relação será serializada
-    @OneToMany(mappedBy = "trajetoria", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "trajetoria", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PontoIntermediario> pontosIntermediarios = new ArrayList<>();
 
     @PrePersist

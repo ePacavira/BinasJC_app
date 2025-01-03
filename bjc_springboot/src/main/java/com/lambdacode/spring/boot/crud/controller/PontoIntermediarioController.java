@@ -1,6 +1,7 @@
 package com.lambdacode.spring.boot.crud.controller;
 
 import com.lambdacode.spring.boot.crud.entity.PontoIntermediario;
+import com.lambdacode.spring.boot.crud.entity.Trajetoria;
 import com.lambdacode.spring.boot.crud.service.PontoIntermediarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -53,4 +54,16 @@ public class PontoIntermediarioController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    //adicionar um conjunto de pontos intermediários
+    @PostMapping("/add-all")
+    public ResponseEntity<List<PontoIntermediario>> addPontosToTrajetoria(
+            @RequestBody Trajetoria request) {
+        List<PontoIntermediario> novosPontos = pontoIntermediarioService.addPontosToTrajetoria(
+                request.getIdTrajetoria(),
+                request.getPontosIntermediarios()
+        );
+        return ResponseEntity.ok(novosPontos);
+    }
+
 }

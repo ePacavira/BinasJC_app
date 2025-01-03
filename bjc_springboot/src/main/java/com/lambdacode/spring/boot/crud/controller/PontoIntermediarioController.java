@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/pontos-intermediarios")
@@ -53,4 +54,20 @@ public class PontoIntermediarioController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @PostMapping("/batch")
+    public ResponseEntity<?> adicionarPontos(@RequestBody List<PontoIntermediario> pontos) {
+        for (PontoIntermediario ponto : pontos) {
+            System.out.println("Latitude: " + ponto.getLatitude());
+            System.out.println("Longitude: " + ponto.getLongitude());
+            if (ponto.getTrajetoria() == null || ponto.getTrajetoria().getIdTrajetoria() == null) {
+                return ResponseEntity.badRequest().body("Cada ponto intermediário deve conter uma trajetória válida.");
+            } else {
+                System.out.println("ID da Trajetória: " + ponto.getTrajetoria().getIdTrajetoria());
+            }
+        }
+        pontoIntermediarioService.salvarTodos(pontos);
+        return ResponseEntity.ok("Pontos adicionados com sucesso.");
+    }
+
 }

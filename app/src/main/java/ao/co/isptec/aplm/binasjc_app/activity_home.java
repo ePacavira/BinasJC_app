@@ -236,28 +236,27 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                   );
 
                   float distancia = results[0];
-                  Log.d("API", "Distance calculada: " + distancia + " meteros");
-
+                  Log.d("API", "Distance calculada: " + distancia + " metros");
 
                   if (distancia > 150) {
                       pontosIntermediarios.add(currentLatLng);
                       PontoIntermediario ponto = new PontoIntermediario(currentLatLng.latitude, currentLatLng.longitude);
                       ponto.setTrajetoria(new PontoIntermediario.TrajetoriaRef(currentTrajectory.getIdTrajetoria()));
                       enviarPontoIntermediario(ponto);
-                      Log.d("PontoIntermediario", " +++PontoEnviado Latitude: " + location.getLatitude() + "Longitude: " + location.getLongitude());
+                      Log.d("PontoIntermediario", "Ponto enviado Latitude: " + location.getLatitude() + " Longitude: " + location.getLongitude());
                   }
 
-                   //Actualizar a pontuação em função da distância
+                  // Atualizar a pontuação
                   if (distancia >= 300 && currentUser != null) {
                       int pontos = currentUser.getPontuacao() + 1;
                       currentUser.setPontuacao(pontos);
-                      Log.d("Pontuacao","Minha Pontuação: " + currentUser.getPontuacao());
-                      // Atualizar usuário na API
-
+                      Log.d("Pontuacao", "Minha Pontuação: " + currentUser.getPontuacao());
+                      // Atualizar usuário na API, se necessário
+                      // Aqui você pode fazer a chamada para atualizar a pontuação do usuário na API
                   }
               }
 
-              //verificar estações
+              // Verificar se o usuário está perto de uma estação
               for (String stationName : predefinedLocations.keySet()) {
                   LatLng stationLatLng = predefinedLocations.get(stationName);
                   float[] results = new float[1];
@@ -267,23 +266,25 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                           results
                   );
                   if (results[0] <= 20 && currentUser != null) {
-                      Log.d("API","Utilizador encontrado: " + currentUser.toString().toString());
-                      Log.d("API", "verificando o conjunto de resevas " + currentUser.getId());
-                      //obter o id da estacao onde o utilizador se encontra
-                      for(Estacao estacao : estacoes){
+                      Log.d("API", "Utilizador encontrado: " + currentUser.toString());
+                      Log.d("API", "Verificando o conjunto de reservas para " + currentUser.getId());
+
+                      // Obter o ID da estação onde o usuário se encontra
+                      for (Estacao estacao : estacoes) {
                           float[] result = new float[1];
                           Location.distanceBetween(location.getLatitude(), location.getLongitude(),
-                                  estacao.getLatitude(),estacao.getLongitude(), result);
-                          if(result[0] <= 20){
+                                  estacao.getLatitude(), estacao.getLongitude(), result);
+                          if (result[0] <= 20) {
                               idEstacao = estacao.getIdEstacao();
                           }
                       }
-                      Log.d("API"," 1) IdEstacao: " + idEstacao);
+                      Log.d("API", "1) IdEstacao: " + idEstacao);
                       verificarReservas(currentUser, location);
                       break;
                   }
               }
           }
+
 
           private void verificarReservas(User user, Location location) {
               Log.d("API"," 2) IdEstacao: " + idEstacao);
@@ -315,19 +316,28 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
               StatusBicicleta statusBackend = StatusBicicleta.fromString(bicicleta.getStatus().toString());
 
               Log.d("API", "Status da bicicleta: " + statusBackend);
-              Log.d("API"," 3) IdEstacao: " + idEstacao);
+              Log.d("API", "3) IdEstacao: " + idEstacao);
 
               if (statusBackend == StatusBicicleta.RESERVADA) {
                   Log.d("API", "Bicicleta reservada encontrada: " + bicicleta.getIdBicicleta());
                   inicializarTrajectoria(user, reserva, location);
                   isTrackingStarted = true;
                   levantarBicicleta(reserva.getIdReserva(), user.getId());
+
+                  // Enviar ponto intermediário quando a bicicleta for reservada
+                  PontoIntermediario pontoIntermediario = new PontoIntermediario(location.getLatitude(), location.getLongitude(), new Trajetoria(reserva.getIdReserva()));
+                  enviarPontoIntermediario(pontoIntermediario); // Enviar ponto intermediário
               } else if (statusBackend == StatusBicicleta.EM_USO) {
                   Log.d("API", "Bicicleta em uso encontrada: " + bicicleta.getIdBicicleta());
-                  devolverBicicleta(reserva.getIdReserva(), user.getId(),idEstacao);
+                  devolverBicicleta(reserva.getIdReserva(), user.getId(), idEstacao);
                   finalizarTrajectoria(location);
+
+                  // Enviar ponto intermediário quando a bicicleta for devolvida
+                  PontoIntermediario pontoIntermediario = new PontoIntermediario(location.getLatitude(), location.getLongitude(), new Trajetoria(reserva.getIdReserva()));
+                  enviarPontoIntermediario(pontoIntermediario); // Enviar ponto intermediário
               }
           }
+
 
           private void inicializarTrajectoria(User user, Reserva reserva, Location location) {
               currentTrajectory = new Trajectoria();

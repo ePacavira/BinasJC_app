@@ -86,14 +86,16 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
     private Marker currentMarket;
     private ArrayList<Trajectoria> allTrajectories = new ArrayList<>();
     private LocationCallback locationCallback;
-    private User user = new User();
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private int totalPoints = 0;
-    List<LatLng> pontosIntermediarios = new ArrayList<>();
+    private PontoIntermediario ponto ;
     List<Estacao> estacoes = new ArrayList<>();
     Integer idEstacao = 0;
     private Trajectoria currentTrajectory = new Trajectoria();
     private boolean isTrackingStarted = false;
+
+    List<PontoIntermediario> pontosBuffer = new ArrayList<>() ;
+    private LatLng lastRecordedPosition = null;
+    private static final float MIN_DISTANCE_BETWEEN_POINTS = 150;
 
 
     // Obter instância de Retrofit
@@ -226,6 +228,7 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
           }
 
           private void processarLocalizacao(Location location, LatLng currentLatLng) {
+<<<<<<< HEAD
               if (!pontosIntermediarios.isEmpty()) {
                   LatLng ultimoPonto = pontosIntermediarios.get(pontosIntermediarios.size() - 1);
                   float[] results = new float[1];
@@ -255,6 +258,13 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                       // Aqui você pode fazer a chamada para atualizar a pontuação do usuário na API
                   }
               }
+=======
+              //inicio da analise de pontos
+                if(isTrackingStarted){
+                    Log.d("PontoIntermediario","Iniciando a analise dos pontos intermediarios");
+                    recordPointIfNeeded(currentLatLng);
+                }
+>>>>>>> 0c3c7b1210d01b5be45cc57cf0ee35c384007120
 
               // Verificar se o usuário está perto de uma estação
               for (String stationName : predefinedLocations.keySet()) {
@@ -285,6 +295,42 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
               }
           }
 
+<<<<<<< HEAD
+=======
+          private void recordPointIfNeeded(LatLng currentLatLng) {
+              if(lastRecordedPosition == null){
+                  // primeiro Ponto da trajectoria
+                  lastRecordedPosition = currentLatLng;
+                  addPointToBuffer(currentLatLng);
+                  Log.d("PontoIntermediario","Primeiro ponto rastreado");
+                  return;
+              }
+              float[] results = new float[1];
+              Location.distanceBetween(
+                      lastRecordedPosition.latitude,
+                      lastRecordedPosition.longitude,
+                      currentLatLng.latitude,
+                      currentLatLng.longitude,
+                      results
+              );
+              Log.d("PontoIntermediario","Distancia Calculada: " + results[0]);
+
+              if (results[0] >= MIN_DISTANCE_BETWEEN_POINTS) {
+                  lastRecordedPosition = currentLatLng;
+                  addPointToBuffer(currentLatLng);
+                  Log.d("PontoIntermediario", "Novo ponto adicionado ao buffer Total points: " + pontosBuffer.size());
+              }
+          }
+
+          private void addPointToBuffer(LatLng position) {
+              PontoIntermediario ponto = new PontoIntermediario(
+                      position.latitude,
+                      position.longitude
+              );
+              pontosBuffer.add(ponto);
+              Log.d("PontoIntermediario", "Ponto adicionado ao Buffer");
+          }
+>>>>>>> 0c3c7b1210d01b5be45cc57cf0ee35c384007120
 
           private void verificarReservas(User user, Location location) {
               Log.d("API"," 2) IdEstacao: " + idEstacao);
@@ -321,7 +367,6 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
               if (statusBackend == StatusBicicleta.RESERVADA) {
                   Log.d("API", "Bicicleta reservada encontrada: " + bicicleta.getIdBicicleta());
                   inicializarTrajectoria(user, reserva, location);
-                  isTrackingStarted = true;
                   levantarBicicleta(reserva.getIdReserva(), user.getId());
 
                   // Enviar ponto intermediário quando a bicicleta for reservada
@@ -344,10 +389,14 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
               currentTrajectory.setUser(new Trajectoria.UserId(user.getId()));
               currentTrajectory.setReserva(new Trajectoria.ReservaId(reserva.getIdReserva()));
-
               // Define as coordenadas iniciais
               currentTrajectory.setLatitudeInicio(location.getLatitude());
               currentTrajectory.setLongitudeInicio(location.getLongitude());
+              // inicializar o pontosBuffer
+              pontosBuffer.clear();
+              lastRecordedPosition = null;
+              isTrackingStarted = true;
+
 
               Log.d("Trajectory", "Trajetória inicializada: " + new Gson().toJson(currentTrajectory));
           }
@@ -358,13 +407,26 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
                       currentTrajectory.setLatitudeFim(location.getLatitude());
                       currentTrajectory.setLongitudeFim(location.getLongitude());
 
-                      Log.d("Trajectory", "Enviando trajetória: " + new Gson().toJson(currentTrajectory));
-                      enviarTrajectoria(currentTrajectory);
+                      enviarTrajectoria(currentTrajectory, new TrajectoryCallback() {
+                          @Override
+                          public void onTrajectoryCreated(Integer trajectoryId) {
+                              // Now send all accumulated points
+                              enviarPontosIntermediarios(trajectoryId, pontosBuffer);
+                          }
 
-                      // Reset após envio
+                          @Override
+                          public void onError(String error) {
+                              Log.e("API", "Error ao enviar a trajectoria: " + error);
+                          }
+                      });
+                      // reiniciar o percurso
                       currentTrajectory = null;
                       isTrackingStarted = false;
+                      pontosBuffer.clear();
+                      lastRecordedPosition = null;
+
                   }
+
               } catch (Exception e) {
                   Log.e("Trajectory", "Erro ao finalizar trajetória", e);
               }
@@ -696,24 +758,29 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
     }
 
-    private void enviarTrajectoria(Trajectoria trajectory){
-        Log.d("Trajectory", "Preparando o envio da Trajectoria");
+
+    interface TrajectoryCallback {
+        void onTrajectoryCreated(Integer trajectoryId);
+        void onError(String error);
+    }
+
+    private void enviarTrajectoria(Trajectoria trajectory, TrajectoryCallback callback) {
         apiService.saveTrajectory(trajectory)
                 .enqueue(new Callback<Trajectoria>() {
                     @Override
                     public void onResponse(Call<Trajectoria> call, Response<Trajectoria> response) {
-                        Log.d("Trajectory", "Código de resposta: " + response.code());
-                        if(response.isSuccessful()){
-                            Log.d("API", "Trajetória enviada com sucesso: " + response.body());
-
-                        }else{
-                            Log.e("API", "Erro no servidor: " + response.code() + ", " + response.errorBody());
+                        if (response.isSuccessful() && response.body() != null) {
+                            Trajectoria savedTrajectory = response.body();
+                            callback.onTrajectoryCreated(savedTrajectory.getIdTrajetoria());
+                            Log.d("API", "##Trajectoria salva com sucesso com ID: " + savedTrajectory.getIdTrajetoria());
+                        } else {
+                            callback.onError("Server error: " + response.code());
                         }
                     }
 
                     @Override
                     public void onFailure(Call<Trajectoria> call, Throwable t) {
-                        Log.e("API", "Erro ao enviar a trajetória", t);
+                        callback.onError(t.getMessage());
                     }
                 });
     }
@@ -767,29 +834,31 @@ public class activity_home extends AppCompatActivity implements OnMapReadyCallba
 
     }
 
-    private void enviarPontoIntermediario(PontoIntermediario ponto) {
-        Log.d("API", "Enviando ponto intermediário: Latitude = " + ponto.getLatitude() + ", Longitude = " + ponto.getLongitude());
-        Log.d("API", "Trajetória associada: ID = " + ponto.getTrajetoria().getIdTrajetoria());
+    private void enviarPontosIntermediarios(Integer trajectoryId, List<PontoIntermediario> pontos) {
+        Log.d("PontoIntermediario","Enviado Ponto");
+        // selecionar o conjunto de pontos
+        for (PontoIntermediario ponto : pontos) {
+            Log.d("PontoIntermediario","Enviado Ponto1");
+            ponto.setTrajetoria(new PontoIntermediario.TrajetoriaRef(trajectoryId));
+            Log.d("PontoIntermediario", "Ponto a ser enviado: \n Latitude: " + ponto.getLatitude() + "Longitude: " + ponto.getLongitude());
+        }
+        Log.d("PontoIntermediario","Enviado Ponto2");
 
-        // Crie uma instância do Retrofit e do ApiService
-        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-
-        // Enviar o ponto intermediário usando o ApiService
-        apiService.createPontoIntermediario(ponto).enqueue(new Callback<PontoIntermediario>() {
+        /*apiService.createPontoIntermediario(?).enqueue(new Callback<List<PontoIntermediario>>() {
             @Override
-            public void onResponse(Call<PontoIntermediario> call, Response<PontoIntermediario> response) {
+            public void onResponse(Call<List<PontoIntermediario>> call, Response<List<PontoIntermediario>> response) {
                 if (response.isSuccessful()) {
-                    Log.d("API", "Ponto enviado com sucesso.");
+                    Log.d("API", "Successfully sent " + pontos.size() + " intermediate points");
                 } else {
-                    Log.e("API", "Falha ao enviar ponto: " + response.errorBody());
+                    Log.e("API", "Failed to send points: " + response.code());
                 }
             }
 
             @Override
-            public void onFailure(Call<PontoIntermediario> call, Throwable t) {
-                Log.e("API", "Erro na comunicação com a API: " + t.getMessage());
+            public void onFailure(Call<List<PontoIntermediario>> call, Throwable t) {
+                Log.e("API", "Error sending points: " + t.getMessage());
             }
-        });
+        });*/
     }
 
 

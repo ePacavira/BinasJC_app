@@ -42,9 +42,9 @@ public class Trajetoria {
     @Column(name = "horario_fim")
     private LocalDateTime horarioFim;
 
-    @JsonManagedReference // Indica que esta relação será serializada
-    @OneToMany(mappedBy = "trajetoria", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<PontoIntermediario> pontosIntermediarios = new ArrayList<>();
+    @OneToMany(mappedBy = "trajetoria", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<PontoIntermediario> pontosIntermediarios;
 
     @PrePersist
     private void setHorarioInicio() {
@@ -52,4 +52,5 @@ public class Trajetoria {
             horarioInicio = reserva.getHorarioReserva(); // Usa o horário da reserva para preencher o horário de início
         }
     }
+
 }

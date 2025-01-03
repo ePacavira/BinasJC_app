@@ -1,14 +1,13 @@
 package com.lambdacode.spring.boot.crud.service;
 
 import com.lambdacode.spring.boot.crud.entity.PontoIntermediario;
+import com.lambdacode.spring.boot.crud.repository.PontoIntermediarioRepository;
+import com.lambdacode.spring.boot.crud.repository.TrajetoriaRepository;
+import java.util.List;
+import java.util.Optional;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import com.lambdacode.spring.boot.crud.repository.PontoIntermediarioRepository;
-import com.lambdacode.spring.boot.crud.repository.PontoIntermediarioRepository;
 
 @Service
 public class PontoIntermediarioService {
@@ -16,6 +15,8 @@ public class PontoIntermediarioService {
     @Autowired
     private PontoIntermediarioRepository pontoIntermediarioRepositorio;
 
+    @Autowired
+    private TrajetoriaRepository trajetoriaRepositorio;
     // Obter todos os pontos intermediários
     public List<PontoIntermediario> getAllPontosIntermediarios() {
         List<PontoIntermediario> pontos = pontoIntermediarioRepositorio.findAll();

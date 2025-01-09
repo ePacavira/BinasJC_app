@@ -1,15 +1,26 @@
 package ao.co.isptec.aplm.binasjc_app;
 
+import com.google.gson.annotations.SerializedName;
+
 public class PontoIntermediario {
+
+    @SerializedName("idPonto")
     private Integer idPonto;
-    private TrajetoriaRef trajetoria;
+
+    @SerializedName("trajetoria")
+    private Trajectoria trajetoria;
+
+    @SerializedName("latitude")
     private double latitude;
+
+    @SerializedName("longitude")
     private double longitude;
 
-    public static class TrajetoriaRef {
+    public static class Trajectoria{
+        @SerializedName("idTrajetoria")
         private Integer idTrajetoria;
 
-        public TrajetoriaRef(Integer idTrajetoria) {
+        public Trajectoria(Integer idTrajetoria) {
             this.idTrajetoria = idTrajetoria;
         }
 
@@ -35,6 +46,14 @@ public class PontoIntermediario {
         this.idPonto = idPonto;
     }
 
+    public Trajectoria getTrajetoria() {
+        return trajetoria;
+    }
+
+    public void setTrajetoria(Trajectoria trajetoria) {
+        this.trajetoria = trajetoria;
+    }
+
     public double getLatitude() {
         return latitude;
     }
@@ -49,14 +68,5 @@ public class PontoIntermediario {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
-    }
-
-    public TrajetoriaRef getTrajetoria() {
-        return trajetoria;
-    }
-
-    // Update the setter to accept TrajetoriaRef instead of Trajectoria
-    public void setTrajetoria(TrajetoriaRef trajetoria) {
-        this.trajetoria = trajetoria;
     }
 }

@@ -1,7 +1,7 @@
 package com.lambdacode.spring.boot.crud.service;
 
 import com.lambdacode.spring.boot.crud.entity.PontoIntermediario;
-import com.lambdacode.spring.boot.crud.repository.PontoIntermediarioRepository;
+import com.lambdacode.spring.boot.crud.repository.PontoIntermediarioRepositorY;
 import com.lambdacode.spring.boot.crud.repository.TrajetoriaRepository;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 public class PontoIntermediarioService {
 
     @Autowired
-    private PontoIntermediarioRepository pontoIntermediarioRepositorio;
+    private PontoIntermediarioRepositorY pontoIntermediarioRepositorio;
 
     @Autowired
     private TrajetoriaRepository trajetoriaRepositorio;

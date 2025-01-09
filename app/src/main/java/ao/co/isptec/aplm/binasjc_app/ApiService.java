@@ -54,8 +54,12 @@ public interface ApiService {
     @GET("/reservas")
     Call<List<Reserva>>getAllReservas();
 
-    @POST("/pontos-intermediarios/add")
-    Call<PontoIntermediario>createPontoIntermediario(@Body PontoIntermediario pontoIntermediário);
+    @POST("/pontos-intermediarios/batch")
+    Call<List<PontoIntermediario>> createPontoIntermediario(@Body List<PontoIntermediario> pontos);
+
+
+    @POST("/bicicletas/reservar")
+    Call<Map<String, Object>>reservarBicicleta(@Body Map<String, Integer> payload);
 
 
 }
